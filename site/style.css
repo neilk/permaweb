@@ -53,35 +53,71 @@ table {
 b, strong { font-weight: bold }
 i, em { font-style: italic }
 
+
 @font-face {
-    font-family: 'Verlag';
-    src: url('/fonts/Verlag/Verlag-Bold.otf') format('opentype');
+    font-family: 'Alegreya';
+    src: url('/fonts/Alegreya-Regular.ttf') format('truetype');
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Alegreya';
+    src: url('/fonts/Alegreya-Italic.ttf') format('truetype');
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Alegreya';
+    src: url('/fonts/Alegreya-Bold.ttf') format('truetype');
     font-style: normal;
     font-weight: bold;
 }
 
 @font-face {
-    font-family: 'Verlag';
-    src: url('/fonts/Verlag/Verlag-LightItalic.otf') format('opentype');
+    font-family: 'AlegreyaSans';
+    src: url('/fonts/AlegreyaSans-Regular.ttf') format('truetype');
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'AlegreyaSans';
+    src: url('/fonts/AlegreyaSans-Italic.ttf') format('truetype');
     font-style: italic;
 }
 
 @font-face {
-    font-family: 'Verlag';
-    src: url('/fonts/Verlag/Verlag-Light.otf') format('opentype');
-    font-style: normal;
+    font-family: 'AlegreyaSans';
+    src: url('/fonts/AlegreyaSans-Bold.ttf') format('truetype');
+    font-weight: bold;
 }
 
 
+header {
+    text-align: center;
+}
+
+#hero {
+    max-width: 20%;
+}
+
 body {
-    font-family: 'Verlag', sans-serif;
+    font-family: 'Alegreya', serif;
     color: #606060;
     padding: 2rem;
     line-height: 1.2;
+
+    max-height: 100%;
+    max-width: 45rem;
+    margin: auto;
 }
 
 a {
     text-decoration-style: dotted;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'AlegreyaSans', sans-serif;
+    font-weight: bold;
 }
 
 h1 a:link {
@@ -107,10 +143,20 @@ a:link, a:visited {
 }
 
 
-/* mobile and non-frontpage layout */
+/* mobile layout */
+
+header h2 {
+    font-family: 'Alegreya', serif;
+    font-weight: normal;
+    font-style: italic;
+}
+
+header {
+    margin-bottom: 2rem;
+}
 
 h1 {
-    font-size: 3rem;
+    font-size: 2.75rem;
 }
 
 h2 {
@@ -127,6 +173,15 @@ nav ul li {
     display: inline;
     padding-right: 1rem;
     white-space: nowrap;
+}
+
+nav ul li.selected {
+    text-decoration: none;
+    font-weight: bold;
+}
+
+nav ul li.selected a, nav ul li.selected a:visited {
+    color: #9c4040;
 }
 
 nav ul.secondary {
@@ -153,6 +208,15 @@ nav ul li:last-child {
     padding-right: 0;
 }
 
+main p {
+    margin-bottom: 1rem;
+}
+
+main ul {
+    margin-left: 1rem;
+    list-style-type: circle;
+}
+
 footer {
     border-top: 1px solid #dddddd;
     padding-top: 0.5rem;
@@ -160,15 +224,8 @@ footer {
     font-size: x-small;
 }
 
-section#front footer {
+#front footer {
     margin-top: 1rem;
-}
-
-body section {
-    max-height: 100%;
-    max-width: 50rem;
-    margin: auto;
-    width: 100%;
 }
 
 h3 {
@@ -181,7 +238,7 @@ h3 {
 tr {
     border-top: 1px solid #dddddd;
     border-bottom: 1px solid #dddddd;
-    border-collapse: collapsed;
+    border-collapse: collapse;
 }
 
 tr td {
@@ -204,47 +261,5 @@ section#content ul li {
 /* frontpage + desktop layout */
 
 @media only screen and (min-width: 40rem)  {
-    section#front {
-        display: grid;
-        grid-template-columns: 15rem 1fr;
-        grid-template-areas:
-                "header image"
-                "footer footer";
-        grid-gap: 2em;
-    }
-
-    section#front header {
-        grid-column-start: 1;
-    }
-
-    section#front footer {
-        grid-column-start: 1;
-        grid-column-end: 3;
-    }
-
-
-    section#front h1 {
-        font-size: 4rem;
-        line-height: 4rem;
-    }
-
-    section#front h2 {
-        font-size: 2rem;
-    }
-
-    section#front h1, section#front h2 {
-        padding-bottom: 2rem;
-    }
-
-    section#front nav ul li {
-        display: block;
-        padding-left: 0;
-        line-height: 2.5rem;
-        font-size: 1.25rem;
-    }
-
-    section#content td {
-        width: 33%;
-    }
 
 }
