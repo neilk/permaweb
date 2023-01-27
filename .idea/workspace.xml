@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="a3c868cf-8688-4dfc-913c-e85617749209" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/site/work/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/site/work/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/site/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/site/style.css" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -42,7 +43,7 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/site/work/index.html">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="160">
@@ -58,11 +59,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/site/style.css">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="230">
-              <caret line="212" column="17" selection-start-line="212" selection-start-column="17" selection-end-line="212" selection-end-column="17" />
+            <state relative-caret-position="211">
+              <caret line="253" column="16" selection-start-line="253" selection-start-column="13" selection-end-line="253" selection-end-column="16" />
             </state>
           </provider>
         </entry>
@@ -105,10 +106,12 @@
       <find>h3</find>
       <find>html5</find>
       <find>modern</find>
-      <find>jquery</find>
       <find>statement</find>
-      <find>210</find>
       <find>...</find>
+      <find>jquery</find>
+      <find>h1</find>
+      <find>s</find>
+      <find>210</find>
     </findStrings>
     <replaceStrings>
       <replace>&amp;hellip;</replace>
@@ -124,9 +127,10 @@
         <option value="$PROJECT_DIR$/images.sh" />
         <option value="$PROJECT_DIR$/site/about/index.html" />
         <option value="$PROJECT_DIR$/site/contact/index.html" />
-        <option value="$PROJECT_DIR$/site/style.css" />
         <option value="$PROJECT_DIR$/site/index.html" />
         <option value="$PROJECT_DIR$/site/work/index.html" />
+        <option value="$PROJECT_DIR$/site/.htaccess" />
+        <option value="$PROJECT_DIR$/site/style.css" />
       </list>
     </option>
   </component>
@@ -214,7 +218,7 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="20308000" />
+    <option name="totallyTimeSpent" value="21542000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="190" y="25" width="1163" height="819" extended-state="0" />
@@ -281,13 +285,6 @@
     <entry file="file://$PROJECT_DIR$/site/icons/minima-social-icons.svg">
       <provider selected="true" editor-type-id="images" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/site/style.css">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="230">
-          <caret line="212" column="17" selection-start-line="212" selection-start-column="17" selection-end-line="212" selection-end-column="17" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/site/index.html">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="337">
@@ -322,6 +319,20 @@
             <element signature="e#3412#3419#0" expanded="true" />
             <element signature="e#3373#3378#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/site/.htaccess">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="45">
+          <caret line="3" column="42" selection-start-line="3" selection-start-column="42" selection-end-line="3" selection-end-column="42" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/site/style.css">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="211">
+          <caret line="253" column="16" selection-start-line="253" selection-start-column="13" selection-end-line="253" selection-end-column="16" />
         </state>
       </provider>
     </entry>

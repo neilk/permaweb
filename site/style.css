@@ -93,7 +93,7 @@ i, em { font-style: italic }
 }
 
 html {
-    font-size: 100%;
+    font-size: 14px;
 }
 
 
@@ -161,11 +161,11 @@ header {
 }
 
 h1 {
-    font-size: 2.75rem;
+    font-size: 2rem;
 }
 
 h2 {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
 }
 
 nav {
@@ -210,9 +210,11 @@ footer {
 }
 
 section#statement {
+    font-family: AlegreyaSans, sans-serif;
+    font-size: 1.2rem;
     border-bottom: 1px solid grey;
     border-top: 1px solid grey;
-    padding: 1rem 1rem 0.5rem 1rem;
+    padding: 1rem 0rem 0.5rem 0rem;
     text-align: center;
     vertical-align: middle;
     line-height: 150%;
@@ -248,8 +250,8 @@ main ul li {
 }
 
 .social-icon {
-    width: 1rem;
-    height: 1rem;
+    width: 16px;
+    height: 16px;
     display: inline-block;
     fill: #828282;
     padding-left: 0.125rem;
@@ -259,5 +261,16 @@ main ul li {
 /* frontpage + desktop layout */
 
 @media only screen and (min-width: 40rem)  {
+  html {
+    font-size: 16px;
+  }
+
+  h1 {
+    font-size: 2.66rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
 
 }
