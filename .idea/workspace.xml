@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="a3c868cf-8688-4dfc-913c-e85617749209" name="Default Changelist" comment="" />
+    <list default="true" id="a3c868cf-8688-4dfc-913c-e85617749209" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/site/contact/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/site/contact/index.html" afterDir="false" />
+    </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
     <ignored path="$PROJECT_DIR$/tmp/" />
@@ -13,11 +15,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/site/index.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="256">
-              <caret line="71" column="42" selection-start-line="71" selection-start-column="42" selection-end-line="71" selection-end-column="42" />
+            <state relative-caret-position="151">
+              <caret line="66" column="17" lean-forward="true" selection-start-line="66" selection-start-column="17" selection-end-line="66" selection-end-column="17" />
               <folding>
                 <element signature="n#style#0;n#img#0;n#a#0;n#p#0;n#header#0;n#body#0;n#html#0;n#!!top" expanded="true" />
               </folding>
@@ -25,11 +27,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/site/contact/index.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="270">
-              <caret line="18" lean-forward="true" selection-start-line="18" selection-end-line="18" />
+            <state relative-caret-position="316">
+              <caret line="88" column="12" lean-forward="true" selection-start-line="88" selection-start-column="12" selection-end-line="88" selection-end-column="12" />
               <folding>
                 <element signature="n#style#0;n#img#0;n#a#0;n#p#0;n#header#0;n#body#0;n#html#0;n#!!top" expanded="true" />
                 <element signature="e#2593#2601#0" expanded="true" />
@@ -44,7 +46,7 @@
         <entry file="file://$PROJECT_DIR$/site/work/index.html">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="160">
-              <caret line="66" column="13" lean-forward="true" selection-start-line="66" selection-start-column="13" selection-end-line="66" selection-end-column="13" />
+              <caret line="120" column="37" lean-forward="true" selection-start-line="120" selection-start-column="37" selection-end-line="120" selection-end-column="37" />
               <folding>
                 <element signature="n#style#0;n#img#0;n#a#0;n#p#0;n#header#0;n#body#0;n#html#0;n#!!top" expanded="true" />
                 <element signature="e#2647#2652#0" expanded="true" />
@@ -109,9 +111,11 @@
       <find>h1</find>
       <find>210</find>
       <find>s</find>
+      <find>'</find>
     </findStrings>
     <replaceStrings>
       <replace>&amp;hellip;</replace>
+      <replace>’</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -123,11 +127,11 @@
         <option value="$PROJECT_DIR$/favicons.sh" />
         <option value="$PROJECT_DIR$/images.sh" />
         <option value="$PROJECT_DIR$/site/about/index.html" />
-        <option value="$PROJECT_DIR$/site/contact/index.html" />
-        <option value="$PROJECT_DIR$/site/index.html" />
-        <option value="$PROJECT_DIR$/site/work/index.html" />
         <option value="$PROJECT_DIR$/site/.htaccess" />
         <option value="$PROJECT_DIR$/site/style.css" />
+        <option value="$PROJECT_DIR$/site/index.html" />
+        <option value="$PROJECT_DIR$/site/work/index.html" />
+        <option value="$PROJECT_DIR$/site/contact/index.html" />
       </list>
     </option>
   </component>
@@ -215,7 +219,7 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="21858000" />
+    <option name="totallyTimeSpent" value="22196000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="190" y="25" width="1163" height="819" extended-state="0" />
@@ -282,33 +286,6 @@
     <entry file="file://$PROJECT_DIR$/site/icons/minima-social-icons.svg">
       <provider selected="true" editor-type-id="images" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/site/contact/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
-          <caret line="18" lean-forward="true" selection-start-line="18" selection-end-line="18" />
-          <folding>
-            <element signature="n#style#0;n#img#0;n#a#0;n#p#0;n#header#0;n#body#0;n#html#0;n#!!top" expanded="true" />
-            <element signature="e#2593#2601#0" expanded="true" />
-            <element signature="e#2856#2864#0" expanded="true" />
-            <element signature="e#3147#3155#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/site/work/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="160">
-          <caret line="66" column="13" lean-forward="true" selection-start-line="66" selection-start-column="13" selection-end-line="66" selection-end-column="13" />
-          <folding>
-            <element signature="n#style#0;n#img#0;n#a#0;n#p#0;n#header#0;n#body#0;n#html#0;n#!!top" expanded="true" />
-            <element signature="e#2647#2652#0" expanded="true" />
-            <element signature="n#style#0;n#span#0;n#p#0;n#section#0;n#main#0;n#body#0;n#html#0;n#!!top" expanded="true" />
-            <element signature="e#3412#3419#0" expanded="true" />
-            <element signature="e#3373#3378#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/site/.htaccess">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="45">
@@ -325,10 +302,37 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/site/index.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="256">
-          <caret line="71" column="42" selection-start-line="71" selection-start-column="42" selection-end-line="71" selection-end-column="42" />
+        <state relative-caret-position="151">
+          <caret line="66" column="17" lean-forward="true" selection-start-line="66" selection-start-column="17" selection-end-line="66" selection-end-column="17" />
           <folding>
             <element signature="n#style#0;n#img#0;n#a#0;n#p#0;n#header#0;n#body#0;n#html#0;n#!!top" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/site/work/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="160">
+          <caret line="120" column="37" lean-forward="true" selection-start-line="120" selection-start-column="37" selection-end-line="120" selection-end-column="37" />
+          <folding>
+            <element signature="n#style#0;n#img#0;n#a#0;n#p#0;n#header#0;n#body#0;n#html#0;n#!!top" expanded="true" />
+            <element signature="e#2647#2652#0" expanded="true" />
+            <element signature="n#style#0;n#span#0;n#p#0;n#section#0;n#main#0;n#body#0;n#html#0;n#!!top" expanded="true" />
+            <element signature="e#3412#3419#0" expanded="true" />
+            <element signature="e#3373#3378#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/site/contact/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="316">
+          <caret line="88" column="12" lean-forward="true" selection-start-line="88" selection-start-column="12" selection-end-line="88" selection-end-column="12" />
+          <folding>
+            <element signature="n#style#0;n#img#0;n#a#0;n#p#0;n#header#0;n#body#0;n#html#0;n#!!top" expanded="true" />
+            <element signature="e#2593#2601#0" expanded="true" />
+            <element signature="e#2856#2864#0" expanded="true" />
+            <element signature="e#3147#3155#0" expanded="true" />
           </folding>
         </state>
       </provider>
