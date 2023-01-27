@@ -2,14 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="a3c868cf-8688-4dfc-913c-e85617749209" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/site/icons/minima-social-icons.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/about/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/contact/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/site/contact/index.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/site/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/site/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/site/style.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/site/work/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/site/work/index.html" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -22,11 +15,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/site/index.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="496">
-              <caret line="70" column="42" selection-start-line="70" selection-start-column="42" selection-end-line="70" selection-end-column="42" />
+            <state relative-caret-position="397">
+              <caret line="73" column="36" lean-forward="true" selection-start-line="73" selection-start-column="36" selection-end-line="73" selection-end-column="36" />
               <folding>
                 <element signature="n#style#0;n#img#0;n#a#0;n#p#0;n#header#0;n#body#0;n#html#0;n#!!top" expanded="true" />
               </folding>
@@ -65,7 +58,7 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/site/style.css">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="230">
@@ -111,11 +104,11 @@
       <find>html {</find>
       <find>h3</find>
       <find>html5</find>
-      <find>statement</find>
       <find>modern</find>
       <find>jquery</find>
       <find>210</find>
       <find>...</find>
+      <find>statement</find>
     </findStrings>
     <replaceStrings>
       <replace>&amp;hellip;</replace>
@@ -130,16 +123,16 @@
         <option value="$PROJECT_DIR$/favicons.sh" />
         <option value="$PROJECT_DIR$/images.sh" />
         <option value="$PROJECT_DIR$/site/about/index.html" />
-        <option value="$PROJECT_DIR$/site/index.html" />
         <option value="$PROJECT_DIR$/site/contact/index.html" />
         <option value="$PROJECT_DIR$/site/style.css" />
         <option value="$PROJECT_DIR$/site/work/index.html" />
+        <option value="$PROJECT_DIR$/site/index.html" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="203" />
-    <option name="y" value="64" />
+    <option name="x" value="190" />
+    <option name="y" value="25" />
     <option name="width" value="1163" />
     <option name="height" value="819" />
   </component>
@@ -221,10 +214,10 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="18961000" />
+    <option name="totallyTimeSpent" value="19887000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="203" y="64" width="1163" height="819" extended-state="0" />
+    <frame x="190" y="25" width="1163" height="819" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Favorites" order="0" side_tool="true" />
@@ -299,16 +292,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/site/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="496">
-          <caret line="70" column="42" selection-start-line="70" selection-start-column="42" selection-end-line="70" selection-end-column="42" />
-          <folding>
-            <element signature="n#style#0;n#img#0;n#a#0;n#p#0;n#header#0;n#body#0;n#html#0;n#!!top" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/site/icons/minima-social-icons.svg">
       <provider selected="true" editor-type-id="images" />
     </entry>
@@ -329,6 +312,16 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="230">
           <caret line="212" column="17" selection-start-line="212" selection-start-column="17" selection-end-line="212" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/site/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="397">
+          <caret line="73" column="36" lean-forward="true" selection-start-line="73" selection-start-column="36" selection-end-line="73" selection-end-column="36" />
+          <folding>
+            <element signature="n#style#0;n#img#0;n#a#0;n#p#0;n#header#0;n#body#0;n#html#0;n#!!top" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
