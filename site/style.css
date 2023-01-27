@@ -53,6 +53,7 @@ table {
 b, strong { font-weight: bold }
 i, em { font-style: italic }
 
+/* fonts */
 
 @font-face {
     font-family: 'Alegreya';
@@ -89,6 +90,10 @@ i, em { font-style: italic }
     font-family: 'AlegreyaSans';
     src: url('/fonts/AlegreyaSans-Bold.ttf') format('truetype');
     font-weight: bold;
+}
+
+html {
+    font-size: 100%;
 }
 
 
@@ -184,26 +189,6 @@ nav ul li.selected a, nav ul li.selected a:visited {
     color: #9c4040;
 }
 
-nav ul.secondary {
-    font-size: small;
-    line-height: 1.5rem;
-    margin-bottom: 1.5rem;
-    margin-top: 0.5rem;
-    border-bottom: 1px dotted;
-    border-top: 1px dotted;
-    font-variant: all-small-caps;
-    letter-spacing: 0.05rem;
-}
-
-nav ul.secondary li a {
-    color: #202020;
-}
-
-nav ul.secondary li::after {
-    content: "\2193";
-    /* padding-left: 0.5rem; */
-}
-
 nav ul li:last-child {
     padding-right: 0;
 }
@@ -221,17 +206,20 @@ footer {
     border-top: 1px solid #dddddd;
     padding-top: 0.5rem;
     margin-top: 5rem;
-    font-size: x-small;
+    font-size: 0.5rem;
 }
 
-#front footer {
-    margin-top: 1rem;
+section#statement {
+    border-bottom: 1px solid grey;
+    border-top: 1px solid grey;
+    padding: 1rem 1rem 0.5rem 1rem;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 150%;
 }
 
 h3 {
-    font-size: x-large;
-    font-variant: all-small-caps;
-    letter-spacing: 0.06rem;
+    font-size: 1.5rem;
     margin: 2rem 0 0.5rem 0;
 }
 
@@ -245,17 +233,27 @@ tr td {
     padding: 0.25rem 0.5rem 0.25rem 0;
 }
 
-td.show {
-    font-style: italic;
+main {
+    font-size: 1.25rem;
+    line-height: 1.66rem;
 }
 
-section#content table {
+main table {
     width: 100%;
     table-layout: fixed;
 }
 
-section#content ul li {
+main ul li {
     margin: 0.5rem 0 0.5rem 0;
+}
+
+.social-icon {
+    width: 1rem;
+    height: 1rem;
+    display: inline-block;
+    fill: #828282;
+    padding-left: 0.125rem;
+    vertical-align: baseline;
 }
 
 /* frontpage + desktop layout */
