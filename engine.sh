@@ -32,6 +32,11 @@ fi
 
 output="$(cat "$filename")"
 
+# TODO validate other things than HTML?
+validateHtml() {
+    echo "$1" | npx html-validate --stdin 1>&2
+}
+
 if [[ -n "${extension}" ]]; then
     scriptsDir="${MAIN_SCRIPTS_DIR}/${extension}"; 
     if [[ -d "${scriptsDir}" ]]; then     
@@ -41,9 +46,17 @@ if [[ -n "${extension}" ]]; then
             fi
             warn "running ${scriptsDir}/${f}";
             newOutput=$(echo "${output}" | "${scriptsDir}/${f}");
-            if [[ $? -eq 0 ]]; then
-                output="${newOutput}"
+            if [[ $? -ne 0 ]]; then
+                warn "Script ${scriptsDir}/${f} failed";
+                continue;
             fi
+            validateHtml "${newOutput}"
+            if [[ $? -ne 0 ]]; then
+                warn "Script ${scriptsDir}/${f} produced invalid html"
+                continue;
+            fi
+            
+            output="${newOutput}"
         done
     fi
 fi

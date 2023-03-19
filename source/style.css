@@ -168,6 +168,10 @@ h2 {
     font-size: 1.25rem;
 }
 
+img#hero {
+    border-radius: 50%;
+}
+
 nav {
     margin: 0.5rem 0;
     line-height: 2.5rem;
