@@ -60,7 +60,7 @@ getResultPath() {
         readlink -f "${cachePath}";
         return 0;
     else 
-        if [[ -f "${cachePath}" ]]; then
+        if [[ -f "${cachePath}.err" ]]; then
             warn "this previously failed, or failed to validate; not running ${script}";
             echo "FAILED";
             return 1;
@@ -78,19 +78,26 @@ getResultPath() {
             warn "Using $tempPath ..."
 
             # execute script
-            "${script}" < "${inputPath}" > "${tempPath}" 2> >(tee -a "${cachePath}" >&2) 
-            if [[ $? -eq 0 ]]; then
+            "${script}" < "${inputPath}" > "${tempPath}" 2> >(tee -a "${cachePath}.err" >&2) 
+            scriptReturnCode=$?
+            # echo " == OUTPUT == " 
+            #cat "${tempPath}"
+            #echo " == END OUTPUT == " 
+
+            if [[ $scriptReturnCode -eq 0 ]]; then
                 warn "ran successfully";
+
 
                 # TODO validate other things than HTML?
                 warn "validating...";
-                npx html-validate "$1" 1>&2
-                if [[ $? -ne 0 ]]; then
+                npx html-validate "${tempPath}" 1>&2
+                validationError=$?
+                if [[ "${validationError}" -ne 0 ]]; then
                     warn "Script ${script} produced invalid html";
                     rm -f -- "$tempPath"
                     trap - EXIT
-                    warn "error is $?";
-                    return $?;
+                    warn "error is ${validationError}";
+                    return "${validationError}";
                 fi
 
                 objectPath="$(pwd)/.engine/object/$(getHashFile "${tempPath}")";
