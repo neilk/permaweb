@@ -20,6 +20,8 @@ warn() {
     echo "$@" >&2;
 }
 
+mkdir -p ".engine/cache"
+
 MAIN_SCRIPTS_DIR="./scripts"
 
 filename="$1"
@@ -30,35 +32,112 @@ if [[ ! -f "$filename" ]]; then
     exit 1;
 fi
 
-output="$(cat "$filename")"
 
-# TODO validate other things than HTML?
-validateHtml() {
-    echo "$1" | npx html-validate --stdin 1>&2
+
+
+getHashFile() {
+    sha1sum "$1" | cut -d' ' -f1
 }
+
+getHashString() {
+    echo "$1" | sha1sum | cut -d' ' -f1
+}
+
+getResultPath() {
+    warn "";
+    warn "========";
+
+    inputPath="$1"
+    script="$2"
+    cacheKey="$(getHashFile "$inputPath")_$(getHashFile "$script")"
+    cachePath=".engine/cache/${cacheKey}"
+    returnCode=0
+
+    warn "trying ${script}";
+    
+    if [[ -L "${cachePath}" ]]; then
+        warn "this previously succeeded";
+        readlink -f "${cachePath}";
+        return 0;
+    else 
+        if [[ -f "${cachePath}" ]]; then
+            warn "this previously failed, or failed to validate; not running ${script}";
+            echo "FAILED";
+            return 1;
+        else 
+            warn "running ${script} on ${inputPath}";
+            
+            # now make a temp file 
+            tempPath=$(mktemp -q /tmp/permaweb.XXXXXX || exit 1)
+            warn "writing to ${tempPath}";
+ 
+            # Set trap to clean up file
+            trap 'rm -f -- "$tempPath"' EXIT
+ 
+            # continue with script
+            warn "Using $tempPath ..."
+
+            # execute script
+            "${script}" < "${inputPath}" > "${tempPath}" 2> >(tee -a "${cachePath}" >&2) 
+            if [[ $? -eq 0 ]]; then
+                warn "ran successfully";
+
+                # TODO validate other things than HTML?
+                warn "validating...";
+                npx html-validate "$1" 1>&2
+                if [[ $? -ne 0 ]]; then
+                    warn "Script ${script} produced invalid html";
+                    rm -f -- "$tempPath"
+                    trap - EXIT
+                    warn "error is $?";
+                    return $?;
+                fi
+
+                objectPath="$(pwd)/.engine/object/$(getHashFile "${tempPath}")";
+                if [[ ! -f "${objectPath}" ]]; then
+                    warn "creating object ${objectPath}";
+                    mv "${tempPath}" "${objectPath}";
+                else
+                    warn "object ${objectPath} already exists";
+                    rm -f -- "$tempPath"
+                    trap - EXIT
+                fi
+
+                rm "${cachePath}";  # remove the error file
+                ln -s "${objectPath}" "${cachePath}";
+                readlink -f "${cachePath}";
+                return 0;
+            fi
+        fi
+    fi
+    warn "should never reach here -- failed";
+    return 1;
+}
+
+inputPath="${filename}";
 
 if [[ -n "${extension}" ]]; then
     scriptsDir="${MAIN_SCRIPTS_DIR}/${extension}"; 
     if [[ -d "${scriptsDir}" ]]; then     
         for f in $(ls "${scriptsDir}" | sort); do
             if [[ ! -x "${scriptsDir}/${f}" ]]; then
-                continue
-            fi
-            warn "running ${scriptsDir}/${f}";
-            newOutput=$(echo "${output}" | "${scriptsDir}/${f}");
-            if [[ $? -ne 0 ]]; then
-                warn "Script ${scriptsDir}/${f} failed";
                 continue;
             fi
-            validateHtml "${newOutput}"
-            if [[ $? -ne 0 ]]; then
-                warn "Script ${scriptsDir}/${f} produced invalid html"
+            script="${scriptsDir}/${f}";
+            warn "Current input path is ${inputPath}";
+
+            newInputPath=$(getResultPath "${inputPath}" "${script}");
+            returnCode=$?
+            warn "return code from result is ${returnCode}";
+            if [[ $returnCode -ne 0 ]]; then
+                warn "Script ${script} failed";
                 continue;
             fi
-            
-            output="${newOutput}"
+
+            warn "new input path is ${newInputPath}";
+            inputPath="${newInputPath}";
         done
     fi
 fi
 
-echo "$output"
+cat "$inputPath";
