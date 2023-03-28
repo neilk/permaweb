@@ -20,11 +20,47 @@ warn() {
     echo "$@" >&2;
 }
 
-mkdir -p ".engine/cache"
+debug() {
+    if "${DEBUG}"; then
+        warn "$@"
+    fi
+}
 
-MAIN_SCRIPTS_DIR="./scripts"
+# create directories
+engineDir="$(pwd)/.engine";   # engine state
+cacheDir="${engineDir}/cache";  # results of scripts on inputs
+objectDir="${engineDir}/object";  # content-addressable objects
+mkdir -p "${engineDir}"         
+mkdir -p "${cacheDir}"    
+mkdir -p "${objectDir}"   
+
+# defaults
+DEBUG=false
+scriptsDir="./scripts"
+
+# parse options
+while getopts ":s:d" opt; do
+    case "${opt}" in
+        d)
+            DEBUG=true
+            ;;
+        s)
+            scriptsDir="${OPTARG}"
+            ;;
+        \?)
+            echo "Invalid option: -$OPTARG" >&2
+            ;;
+    esac
+done
+
+# parse positional arguments after options
+shift $((OPTIND-1))
 
 filename="$1"
+if [[ -z "${filename}" ]]; then
+    warn "No filename provided";
+    exit 1;
+fi
 extension="${filename##*.}"
 
 if [[ ! -f "$filename" ]]; then
@@ -44,73 +80,73 @@ getHashString() {
 }
 
 getResultPath() {
-    warn "";
-    warn "========";
+    debug "";
+    debug "========";
 
     inputPath="$1"
     script="$2"
     cacheKey="$(getHashFile "$inputPath")_$(getHashFile "$script")"
-    cachePath=".engine/cache/${cacheKey}"
+    cachePath="${cacheDir}/${cacheKey}"
     returnCode=0
 
-    warn "trying ${script}";
+    debug "trying ${script}";
     
     if [[ -L "${cachePath}" ]]; then
         warn "this previously succeeded";
         readlink -f "${cachePath}";
         return 0;
     else 
-        if [[ -f "${cachePath}.err" ]]; then
-            warn "this previously failed, or failed to validate; not running ${script}";
-            echo "FAILED";
+        if [[ -f "${cachePath}" ]]; then
+            debug "this previously failed, or failed to validate; not running ${script}";
+            debug "FAILED";
             return 1;
         else 
-            warn "running ${script} on ${inputPath}";
+            debug "running ${script} on ${inputPath}";
             
             # now make a temp file 
             tempPath=$(mktemp -q /tmp/permaweb.XXXXXX || exit 1)
-            warn "writing to ${tempPath}";
+            debug "writing to ${tempPath}";
  
             # Set trap to clean up file
             trap 'rm -f -- "$tempPath"' EXIT
  
             # continue with script
-            warn "Using $tempPath ..."
+            debug "Using $tempPath ..."
 
             # execute script
-            "${script}" < "${inputPath}" > "${tempPath}" 2> >(tee -a "${cachePath}.err" >&2) 
+            "${script}" < "${inputPath}" > "${tempPath}" 2> >(tee -a "${cachePath}" >&2) 
             scriptReturnCode=$?
             # echo " == OUTPUT == " 
             #cat "${tempPath}"
             #echo " == END OUTPUT == " 
 
             if [[ $scriptReturnCode -eq 0 ]]; then
-                warn "ran successfully";
-
+                debug "ran successfully";
+                rm "${cachePath}";  # remove error file
 
                 # TODO validate other things than HTML?
-                warn "validating...";
+                debug "validating...";
                 npx html-validate "${tempPath}" 1>&2
                 validationError=$?
                 if [[ "${validationError}" -ne 0 ]]; then
                     warn "Script ${script} produced invalid html";
                     rm -f -- "$tempPath"
                     trap - EXIT
-                    warn "error is ${validationError}";
+                    debug "error is ${validationError}";
                     return "${validationError}";
                 fi
 
-                objectPath="$(pwd)/.engine/object/$(getHashFile "${tempPath}")";
+                objectPath="${objectDir}/$(getHashFile "${tempPath}")";
                 if [[ ! -f "${objectPath}" ]]; then
-                    warn "creating object ${objectPath}";
+                    debug "creating object ${objectPath}";
                     mv "${tempPath}" "${objectPath}";
                 else
-                    warn "object ${objectPath} already exists";
+                    debug "object ${objectPath} already exists";
                     rm -f -- "$tempPath"
                     trap - EXIT
                 fi
 
-                rm "${cachePath}";  # remove the error file
+                rm "${errorPath}";
                 ln -s "${objectPath}" "${cachePath}";
                 readlink -f "${cachePath}";
                 return 0;
@@ -124,24 +160,24 @@ getResultPath() {
 inputPath="${filename}";
 
 if [[ -n "${extension}" ]]; then
-    scriptsDir="${MAIN_SCRIPTS_DIR}/${extension}"; 
+    scriptsDir="${scriptsDir}/${extension}"; 
     if [[ -d "${scriptsDir}" ]]; then     
         for f in $(ls "${scriptsDir}" | sort); do
             if [[ ! -x "${scriptsDir}/${f}" ]]; then
                 continue;
             fi
             script="${scriptsDir}/${f}";
-            warn "Current input path is ${inputPath}";
+            debug "Current input path is ${inputPath}";
 
             newInputPath=$(getResultPath "${inputPath}" "${script}");
             returnCode=$?
-            warn "return code from result is ${returnCode}";
+            debug "return code from result is ${returnCode}";
             if [[ $returnCode -ne 0 ]]; then
-                warn "Script ${script} failed";
+                debug "Script ${script} failed";
                 continue;
             fi
 
-            warn "new input path is ${newInputPath}";
+            debug "new input path is ${newInputPath}";
             inputPath="${newInputPath}";
         done
     fi
