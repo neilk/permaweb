@@ -161,12 +161,15 @@ inputPath="${filename}";
 
 if [[ -n "${extension}" ]]; then
     scriptsDir="${scriptsDir}/${extension}"; 
-    if [[ -d "${scriptsDir}" ]]; then     
-        for f in $(ls "${scriptsDir}" | sort); do
-            if [[ ! -x "${scriptsDir}/${f}" ]]; then
-                continue;
-            fi
-            script="${scriptsDir}/${f}";
+    if [[ -d "${scriptsDir}" ]]; then
+
+        # The first "script" is a no-op, cat, because we need to validate the file as is.
+        scripts=('/bin/cat');
+        while IFS=  read -r -d $'\0' script; do
+            scripts+=("${script}")
+        done < <(find "${scriptsDir}" -type f -perm +111 -prune -print0 | sort -z)
+
+        for script in "${scripts[@]}"; do
             debug "Current input path is ${inputPath}";
 
             newInputPath=$(getResultPath "${inputPath}" "${script}");
