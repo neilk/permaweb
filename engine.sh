@@ -92,7 +92,7 @@ getResultPath() {
     debug "trying ${script}";
     
     if [[ -L "${cachePath}" ]]; then
-        warn "this previously succeeded";
+        debug "this previously succeeded";
         readlink -f "${cachePath}";
         return 0;
     else 
@@ -176,7 +176,7 @@ if [[ -n "${extension}" ]]; then
             returnCode=$?
             debug "return code from result is ${returnCode}";
             if [[ $returnCode -ne 0 ]]; then
-                debug "Script ${script} failed";
+                warn "Script ${script} failed; skipping";
                 continue;
             fi
 
