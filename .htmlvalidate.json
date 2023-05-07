@@ -1,0 +1,10 @@
+{
+    "extends": [
+        "html-validate:recommended"
+    ],
+    "rules": {
+        # todo: we want to permit inline-style (flags no-inline-style)
+        # todo: we want to allow <a href="foo..."><svg></svg></a> (flags wcag/h30)
+        "no-inline-style": false
+    }
+}
