@@ -5,14 +5,14 @@ const { JSDOM: jsdom } = require("jsdom");
 
 
 async function main() {
-    let navigationString = fs.readFileSync(`${__dirname}/navigation.html`).toString();
-    let navigation = jsdom.fragment(navigationString);
+    let boilerPlateHeadersString = await fs.readFileSync(`${__dirname}/header.html`).toString();
+    let boilerPlateHeaders = jsdom.fragment(boilerPlateHeadersString);
 
     let dom = new jsdom(fs.readFileSync('/dev/stdin').toString());
     const { document } = dom.window;
 
-    let body = document.querySelectorAll('body')[0];
-    body.prepend(navigation);
+    let head = document.querySelectorAll('head')[0];
+    head.prepend(boilerPlateHeaders);
 
     process.stdout.write(dom.serialize());
 }

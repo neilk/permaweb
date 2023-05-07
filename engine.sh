@@ -126,6 +126,8 @@ getResultPath() {
 
                 # TODO validate other things than HTML?
                 debug "validating...";
+                # TODO why does this try to make a network connection? On a plane, with busted wifi,
+                # this blocked. But if wifi was turned off it succeeded
                 npx html-validate "${tempPath}" 1>&2
                 validationError=$?
                 if [[ "${validationError}" -ne 0 ]]; then
@@ -146,7 +148,6 @@ getResultPath() {
                     trap - EXIT
                 fi
 
-                rm "${errorPath}";
                 ln -s "${objectPath}" "${cachePath}";
                 readlink -f "${cachePath}";
                 return 0;
