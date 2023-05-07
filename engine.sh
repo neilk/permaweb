@@ -187,4 +187,11 @@ if [[ -n "${extension}" ]]; then
     fi
 fi
 
-cat "$inputPath";
+# This is either the original input path or the result of a series of scripts
+
+# TODO it seems very wasteful to copy with /bin/cat when it's say, a TTF file we're not doing anything with
+
+# Also, it seems not great that we only copy over, we don't remove files when they're removed
+# hmmmm we might need a more abstract way of expressing the target, instead of output redirection?
+# or, make sure the engine.sh only runs when there are scripts to execute; otherwise we do a fast link
+/bin/cat "$inputPath";
