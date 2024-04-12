@@ -104,11 +104,13 @@ getResultPath() {
             debug "running ${script} on ${inputPath}";
             
             # now make a temp file 
-            tempPath=$(mktemp -q /tmp/permaweb.XXXXXX || exit 1)
+            tempPath=$(mktemp -q "/tmp/permaweb.XXXXX" || exit 1)
             debug "writing to ${tempPath}";
  
             # Set trap to clean up file
-            trap 'rm -f -- "$tempPath"' EXIT
+            if ! ((DEBUG)); then
+                trap 'rm -f -- "$tempPath"' EXIT
+            fi
  
             # continue with script
             debug "Using $tempPath ..."
@@ -132,7 +134,7 @@ getResultPath() {
                 validationError=$?
                 if [[ "${validationError}" -ne 0 ]]; then
                     warn "Script ${script} produced invalid html";
-                    rm -f -- "$tempPath"
+                    # rm -f -- "$tempPath"
                     trap - EXIT
                     debug "error is ${validationError}";
                     return "${validationError}";

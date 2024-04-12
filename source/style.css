@@ -117,7 +117,7 @@ body {
 }
 
 a {
-    text-decoration-style: dotted;
+    text-decoration-style: solid;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -260,6 +260,10 @@ main ul li {
     fill: #828282;
     padding-left: 0.125rem;
     vertical-align: baseline;
+}
+
+.nowrap {
+    white-space: nowrap;
 }
 
 /* frontpage + desktop layout */
