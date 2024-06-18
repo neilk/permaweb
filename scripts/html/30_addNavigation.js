@@ -22,9 +22,12 @@ async function main() {
     let navigationString = fs.readFileSync(`${__dirname}/navigation.html`).toString();
     let navigation = jsdom.fragment(navigationString);
     
-    for (const anchor of navigation.querySelectorAll("nav a")) {
+    for (const listItem of navigation.querySelectorAll("nav li")) {
+        const anchor = listItem.querySelector("a");
         if (urlsThatPointHere.includes(anchor.href)) {
-            anchor.classList.add("selected");
+            const textNode = dom.window.document.createTextNode(anchor.innerHTML);
+            listItem.replaceChild(textNode, anchor);
+            listItem.classList.add("selected");
         }
     }
 
