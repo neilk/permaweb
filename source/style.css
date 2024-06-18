@@ -184,7 +184,7 @@ nav ul li {
     white-space: nowrap;
 }
 
-nav ul li.selected {
+nav ul a.selected {
     text-decoration: none;
     font-weight: bold;
 }
@@ -207,10 +207,11 @@ main ul {
 }
 
 footer {
+    font-family: AlegreyaSans, sans-serif;
     border-top: 1px solid #dddddd;
     padding-top: 0.5rem;
     margin-top: 5rem;
-    font-size: 0.5rem;
+    font-size: 0.75rem;
 }
 
 section#statement {
@@ -251,6 +252,11 @@ main table {
 
 main ul li {
     margin: 0.5rem 0 0.5rem 0;
+}
+
+p.skills {
+    font-family: 'AlegreyaSans', sans-serif;
+    font-size: smaller;
 }
 
 .social-icon {
