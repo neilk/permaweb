@@ -185,12 +185,9 @@ nav ul li {
 }
 
 nav ul a.selected {
+    color: #9c4040;
     text-decoration: none;
     font-weight: bold;
-}
-
-nav ul li.selected a, nav ul li.selected a:visited {
-    color: #9c4040;
 }
 
 nav ul li:last-child {

@@ -91,12 +91,12 @@ getResultPath() {
 
     debug "trying ${script}";
     
-    if [[ -L "${cachePath}" ]]; then
+    if [[ (! "${DEBUG}") && (-L "${cachePath}") ]]; then
         debug "this previously succeeded";
         readlink -f "${cachePath}";
         return 0;
     else 
-        if [[ -f "${cachePath}" ]]; then
+        if [[ (! "${DEBUG}") && (-f "${cachePath}") ]]; then
             debug "this previously failed, or failed to validate; not running ${script}";
             debug "FAILED";
             return 1;
@@ -159,6 +159,13 @@ getResultPath() {
     warn "should never reach here -- failed";
     return 1;
 }
+
+# This framework assumes that we are always only manipulating textual content, but sometimes, 
+# we need a little more metadata about the original file. We pass those in environment variables. 
+# 
+# BREAKAWAY_SOURCE_PATH - The path of the source file, relative to the source directory if we were invoked that way
+BREAKAWAY_SOURCE_PATH=$(realpath -s --relative-to=source "${filename}");
+export BREAKAWAY_SOURCE_PATH;
 
 inputPath="${filename}";
 
