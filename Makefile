@@ -70,4 +70,4 @@ $(BUILD_DIR)/icons/favicon-%: $(FAVICON_SOURCE)
 
 # Clean build directory
 clean:
-	rm -rf $(BUILD_DIR)
+	rm -rf $(BUILD_DIR)/*
