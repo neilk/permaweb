@@ -6,17 +6,12 @@ const { JSDOM: jsdom } = require("jsdom");
 
 async function main() {
     let dom = new jsdom(fs.readFileSync('/dev/stdin').toString());
+    const doc = dom.window.document;
 
-    /*
-    let boilerPlateHeadersString = await fs.readFileSync(`${__dirname}/header.html`).toString();
-    let boilerPlateHeaders = jsdom.fragment(boilerPlateHeadersString);
+    const title = doc.querySelector('title');
 
-    const { document } = dom.window;
+    title.prepend(doc.createTextNode("Neil K · "));
 
-    let head = document.querySelectorAll('head')[0];
-    head.prepend(boilerPlateHeaders);
-
-    */
     process.stdout.write(dom.serialize());
 }
 
