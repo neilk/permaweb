@@ -1,5 +1,10 @@
 #!/usr/bin/env node
 
+/**
+ * Obscuring emails is a bit of an open question. I couldn't find any techniques
+ * that worked perfectly for every case - screen readers, assistive devices, copy & paste.
+ */
+
 const fs = require('fs');
 const { JSDOM: jsdom } = require("jsdom");
 
@@ -26,17 +31,17 @@ async function main() {
     body.querySelectorAll('a').forEach(anchor => {
         const href = anchor.getAttribute('href');
         if (href.startsWith('mailto:')) {
-
-            // Reverse text
-            const classes = new Set(anchor.className.split(' '));
-            classes.add(reverseClass);
-            anchor.className = [...classes].sort().join(' ');
-            anchor.textContent = anchor.textContent.split('').reverse().join('');
-
+            anchor.textContent = anchor.textContent.replace('@', ' at ');
             // obscure mailto: link
             const address = href.substr('mailto:'.length);
-            const obscuredAddress = address.split('').map(char => `&#${char.codePointAt(0)}`);
-            anchor.setAttribute('href', `mailto:${obscuredAddress}`);
+ 
+            // url-encoding - this is not very effective but better than nothing,
+            // and some screen readers should be okay with it.
+            const obscuredAddress = address
+                .split('')
+                .map(char => `%${char.codePointAt(0).toString(16)}`)
+                .join('');
+            anchor.setAttribute('href', `mailto:${obscuredAddress}?subject=Hi,+Neil`);
         }
 
     });
