@@ -18,7 +18,6 @@ cacheDir=$(mktemp -d "/tmp/permaweb.XXXXX" || exit 1)
 # Common assertions
 assert_cache_ok "$cacheDir"
 
-
-# Assertions particular to this test
+# Test assertions
 count=$(grep -c '<meta charset' "$outputPath")
 assert "output is modified" "$count == 1"

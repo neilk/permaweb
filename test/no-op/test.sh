@@ -19,7 +19,8 @@ cacheDir=$(mktemp -q -d "/tmp/permaweb.XXXXX" || exit 1)
 # Common assertions
 assert_cache_ok "$cacheDir"
 
-# Assertions particular to this test
+
+# Test assertions
 
 # Because it was a no-op, the original should hash the same as the output
 inputHash=$(getFileHash "$inputPath")
