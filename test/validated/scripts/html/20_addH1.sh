@@ -14,7 +14,7 @@ while IFS= read -r line || [[ -n "$line" ]]; do
   fi
   if [[ "$line" =~ $body_regex ]]; then
     # add an H1
-    echo "${BASH_REMATCH[1]}<h1>$title_content<h1>${BASH_REMATCH[2]}"
+    echo "${BASH_REMATCH[1]}<h1>$title_content</h1>${BASH_REMATCH[2]}"
   else
     echo "$line"
   fi

@@ -22,5 +22,5 @@ assert_cache_ok "$cacheDir"
 count=$(grep -c '<meta charset' "$outputPath")
 assert "output has charset" "$count == 1"
 
-count=$(grep -c '<title' "$outputPath")
-assert "output has title" "$count == 1"
+count=$(grep -c '<h1' "$outputPath")
+assert "output has h1" "$count == 1"

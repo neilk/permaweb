@@ -1,13 +1,13 @@
 #!/bin/bash
-set -E
-
-handle_error() {
-    local retval=$?
-    local line=$1
-    echo "Failed at $line: $BASH_COMMAND"
-    exit $retval
-}
-trap 'handle_error $LINENO' ERR
+# set -E
+#
+#handle_error() {
+#    local retval=$?
+#    local line=$1
+#    echo "Failed at $line: $BASH_COMMAND"
+#    exit $retval
+#}
+#trap 'handle_error $LINENO' ERR
 
 
 warn() {
@@ -145,9 +145,11 @@ getResultPath() {
         # TODO rather than look up the validator every time, somehow cache that
         # validate, if possible. This can also fail the script
         local validator
-        validator="validators/${extension}"
+        validator="$rootDir/scripts/validators/${extension}"
+        debug "validator is $validator"
         if [[ -x "$validator" ]]; then
-            "${validator}" "${tempStdoutPath}" 1>&2 2>>"${tempStderrPath}"
+            debug "running validator"
+            "${validator}" < "${tempStdoutPath}" 1>&2 2>>"${tempStderrPath}"
             exitCode=$?
         fi
 
@@ -194,7 +196,7 @@ if [[ -n "${extension}" ]]; then
             returnCode=$?
             debug "return code from result is ${returnCode}";
             if [[ $returnCode -ne 0 ]]; then
-                warn "Script ${script} failed; skipping";
+                debug "Script ${script} failed; skipping";
                 continue;
             fi
 

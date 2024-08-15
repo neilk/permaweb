@@ -5,4 +5,7 @@
 
 # Unclear why we need to explicitly specify the config file .htmlvalidate.json; it's
 # supposed to search upwards in directories for that file?  
-npx html-validate -c .htmlvalidate.json "$1"
+
+set -e 
+cd "$(dirname "$0")" || exit 1
+npx html-validate -c .htmlvalidate.json --stdin 1>&2 
