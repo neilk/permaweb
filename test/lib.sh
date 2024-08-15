@@ -42,17 +42,17 @@ getFileHash() {
 
 
 # Common tests
-assert_engine_dir_structure_ok() {
-    testDir="$1"
+assert_cache_ok() {
+    cacheDir="$1"
 
     # assert the .engine directories exist
-    assert "engine directory exists" "-d $testDir/.engine"
-    assert "cache directory exists" "-d $testDir/.engine/cache"
-    assert "object directory exists"  "-d $testDir/.engine/object"
+    assert "cache directory exists" "-d $cacheDir"
+    assert "exec directory exists" "-d $cacheDir/exec"
+    assert "object directory exists"  "-d $cacheDir//object"
 
     # Every file in 'object' is named according to its sha1 hash
     # for file in ./engine/object
-    for file in "$testDir"/.engine/object/*; do
+    for file in "$cacheDir"/object/*; do
         [ -e "$file" ] || continue   # directory was empty and bash is stupid, gives us the glob pattern.
         hash=$(getFileHash "$file")
         bn=$(basename "$file")
@@ -60,9 +60,9 @@ assert_engine_dir_structure_ok() {
     done;
 
     # Every subdirectory in cache has the structure of 1 -> link, 2 -> link, exit -> file
-    for dir in "$testDir"/.engine/cache/*; do
+    for dir in "$cacheDir"/exec/*; do
         [ -d "$dir" ] || continue
-        assert "cache contains directory" "-d $dir"
+        assert "exec contains directory" "-d $dir"
         for subdir in "$dir"/*; do
             [ -d "$subdir" ] || continue
             assert "directory contains link at 1" "-L $subdir/1"

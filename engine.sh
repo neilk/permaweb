@@ -1,11 +1,14 @@
 #!/bin/bash
+set -E
 
-# MAYBE:
-# what if we did the cache this way
-# input_hash/command_hash/
-# rc -> text file containing a single integer (or a binary file?); return code
-# 1 -> link to stdout object
-# 2 -> link to stderr object
+handle_error() {
+    local retval=$?
+    local line=$1
+    echo "Failed at $line: $BASH_COMMAND"
+    exit $retval
+}
+trap 'handle_error $LINENO' ERR
+
 
 warn() {
     echo "$@" >&2;
@@ -17,18 +20,22 @@ debug() {
     fi
 }
 
+
 # defaults
 rootDir=$(pwd);
 DEBUG=false
 
 # parse options
-while getopts ":r:d" opt; do
+while getopts "dr:c:" opt; do
     case "${opt}" in
         d)
             DEBUG=true
             ;;
         r)
             rootDir="${OPTARG}"
+            ;;
+        c)
+            cacheDir="${OPTARG}"
             ;;
         \?)
             echo "Invalid option: -$OPTARG" >&2
@@ -40,17 +47,23 @@ done
 if [[ ! $rootDir = /* ]]; then
     rootDir="$(pwd)/$rootDir"
 fi
+if [[ -z ${cacheDir:-} ]]; then
+    # cacheDir was not set
+    cacheDir="$rootDir/.cache"
+else 
+    # cacheDir is set. We just make sure relative directories work
+    if [[ ! $cacheDir = /* ]]; then
+        cacheDir="$(pwd)/$cacheDir"
+    fi
+fi
 
 # create directories
 # (This should be set up in the makefile, we shouldn't have to check this every invocation?)
-engineDir="${rootDir}/.engine"
-cacheDirName="cache";
-objectDirName="object";
-cacheDir="${engineDir}/${cacheDirName}";  # results of scripts on inputs
-objectDir="${engineDir}/${objectDirName}";  # content-addressable objects
-mkdir -p "${engineDir}"         
-mkdir -p "${cacheDir}"    
-mkdir -p "${objectDir}"
+execCacheDir="${cacheDir}/exec";  # results of scripts on inputs
+objectCacheDir="${cacheDir}/object";  # content-addressable objects
+mkdir -p "${cacheDir}"         
+mkdir -p "${execCacheDir}"    
+mkdir -p "${objectCacheDir}"
 
 scriptsDir="${rootDir}/scripts"
 
@@ -79,7 +92,7 @@ contentCache() {
     local sourcePath linkPath objectPath
     sourcePath=$1
     linkPath=$2
-    objectPath="${objectDir}/$(getFileHash "${sourcePath}")";
+    objectPath="${objectCacheDir}/$(getFileHash "${sourcePath}")";
     if [[ ! -f "${objectPath}" ]]; then
         mv "${sourcePath}" "${objectPath}"
     fi
@@ -102,7 +115,7 @@ getResultPath() {
     script="$2"
 
     local cachePath cachedExitCodePath cachedStdoutPath cachedStderrPath
-    cachePath="${cacheDir}/$(getFileHash "$inputPath")/$(getFileHash "$script")"
+    cachePath="${execCacheDir}/$(getFileHash "$inputPath")/$(getFileHash "$script")"
     cachedExitCodePath="${cachePath}/exit"
     cachedStdoutPath="${cachePath}/1"
     cachedStderrPath="${cachePath}/2"
@@ -129,7 +142,7 @@ getResultPath() {
         "${script}" < "${inputPath}" > "${tempStdoutPath}" 2>"${tempStderrPath}"
         exitCode=$?
 
-        # TODO cache the validator
+        # TODO rather than look up the validator every time, somehow cache that
         # validate, if possible. This can also fail the script
         local validator
         validator="validators/${extension}"
