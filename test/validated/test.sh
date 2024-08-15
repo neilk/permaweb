@@ -7,7 +7,6 @@ cd "$testDir" || exit
 source "$(dirname "$testDir")/lib.sh"
 trap 'handle_error $LINENO' ERR
 
-warn "$0"
 
 # Run the script
 inputPath=source/index.html

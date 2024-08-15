@@ -145,7 +145,7 @@ getResultPath() {
         # TODO rather than look up the validator every time, somehow cache that
         # validate, if possible. This can also fail the script
         local validator
-        validator="$rootDir/scripts/validators/${extension}"
+        validator="$scriptsDir/validators/${extension}"
         debug "validator is $validator"
         if [[ -x "$validator" ]]; then
             debug "running validator"

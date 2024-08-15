@@ -7,8 +7,6 @@ cd "$testDir" || exit
 
 source "$(dirname "$testDir")/lib.sh"
 
-warn "$0"
-
 
 # Run the script
 inputPath=source/index.html
