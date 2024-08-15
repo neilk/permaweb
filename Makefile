@@ -76,7 +76,7 @@ TESTS := $(TEST_DIRS:%=%/test.sh)
 
 # Default target to run all tests
 test: $(TESTS)
-	@echo "All tests executed." >&2
+	@echo "\nAll tests executed." >&2
 
 # Pattern rule to run each test script
 $(TESTS):

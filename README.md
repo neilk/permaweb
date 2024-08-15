@@ -13,10 +13,17 @@ rsync -av --delete . brevity@brevity.org:neilk.net
 
 
 
+# Next test - ensure the caching works
 
-# Testing
+create a temp file
+write scripts that cat to the temp file
+grep the temp file to see which scripts executed
 
+run the entire thing again, with the _same_ cached directory and script directory
+and see what ran
 
+run the entire thing again with the same cached directory and a similar, but not identical, script directory
+and see what ran
 
 
 
@@ -42,4 +49,5 @@ pipeOrPass() {
     fi
 }
 ```
+
 
