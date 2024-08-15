@@ -68,7 +68,7 @@ $(BUILD_DIR)/icons/favicon-%: $(FAVICON_SOURCE)
 
 # Run the tests
 test:
-	@find test/ -type f -name test.sh -exec bash {} \;
+	@find test -type f -name test.sh -exec bash {} \;
 
 
 # Clean build directory

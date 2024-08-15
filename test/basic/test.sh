@@ -1,14 +1,12 @@
 #!/bin/bash
 set -E
-trap 'handle_error $LINENO' ERR
 
 testDir=$(dirname -- "$( readlink -f -- "$0"; )");
 cd "$testDir" || exit
 rm -rf ".engine"
 
 source "$(dirname "$testDir")/lib.sh"
-
-source "$(dirname "$testDir")/lib.sh"
+trap 'handle_error $LINENO' ERR
 
 # Run the script
 inputPath=source/index.html
@@ -23,10 +21,5 @@ assert_engine_dir_structure_ok "$testDir"
 
 
 # Assertions particular to this test
-
-# Because it was a no-op, the original should hash the same as the output
-inputHash=$(getFileHash "$inputPath")
-outputHash=$(getFileHash "$outputPath")
-assert "output is same as input" "$inputHash == $outputHash"
-
-
+count=$(grep -c '<meta charset' "$outputPath")
+assert "output is modified" "$count == 1"

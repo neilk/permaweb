@@ -166,13 +166,12 @@ inputPath=${filename};
 # Build the array of scripts
 scripts=();
 if [[ -n "${extension}" ]]; then
-    if [[ -d "${scriptsDir}" ]]; then
-
+    if [[ -d "${scriptsDir}/${extension}" ]]; then        
         # The first "script" is a no-op, cat, because we need to validate the file as is.
         scripts=('/bin/cat');
         while IFS=  read -r -d $'\0' script; do
             scripts+=("${script}")
-        done < <(find "${scriptsDir}" -type f -perm +111 -prune -print0 | sort -z)
+        done < <(find "${scriptsDir}/${extension}" -type f -perm +111 -prune -print0 | sort -z)
 
         # iterate through the array of scripts on this content
         for script in "${scripts[@]}"; do

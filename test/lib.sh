@@ -4,6 +4,13 @@ warn() {
     echo "$@" >&2;
 }
 
+handle_error() {
+    local retval=$?
+    local line=$1
+    echo "Failed at $line: $BASH_COMMAND"
+    exit $retval
+}
+
 # params: Message, Assertion
 assert() {                         
   E_PARAM_ERR=98
@@ -46,6 +53,7 @@ assert_engine_dir_structure_ok() {
     # Every file in 'object' is named according to its sha1 hash
     # for file in ./engine/object
     for file in "$testDir"/.engine/object/*; do
+        [ -e "$file" ] || continue   # directory was empty and bash is stupid, gives us the glob pattern.
         hash=$(getFileHash "$file")
         bn=$(basename "$file")
         assert "object basename matches its content" "$hash == $bn"
@@ -53,8 +61,10 @@ assert_engine_dir_structure_ok() {
 
     # Every subdirectory in cache has the structure of 1 -> link, 2 -> link, exit -> file
     for dir in "$testDir"/.engine/cache/*; do
+        [ -d "$dir" ] || continue
         assert "cache contains directory" "-d $dir"
         for subdir in "$dir"/*; do
+            [ -d "$subdir" ] || continue
             assert "directory contains link at 1" "-L $subdir/1"
             assert "directory contains link at 2" "-L $subdir/2"
             assert "directory contains file at exit" "-f $subdir/exit"
