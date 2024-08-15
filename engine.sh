@@ -102,6 +102,7 @@ contentCache() {
     local relativeObjectPath
     relativeObjectPath=$(realpath -s --relative-to="$(dirname "${linkPath}")" "${objectPath}")
     ln -s "${relativeObjectPath}" "${linkPath}"
+    ln "${objectPath}" "${linkPath}"
 }
 
 
@@ -163,7 +164,7 @@ getResultPath() {
     cachedExitCode=$(<"${cachedExitCodePath}");
     if [[ "${cachedExitCode}" -eq 0 ]]; then
         if [[ -e "${cachedStdoutPath}" ]]; then
-            readlink "${cachedStdoutPath}"
+            echo "$(dirname "${cachedStdoutPath}")/$(readlink "${cachedStdoutPath}")"
         fi
         if [[ -e $cachedStderrPath ]]; then
             cat "${cachedStderrPath}" >&2
