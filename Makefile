@@ -65,9 +65,15 @@ $(BUILD_DIR)/icons/favicon-%: $(FAVICON_SOURCE)
 	@mkdir -p $(ICONS_DIR)
 	./favicons.sh $< $(patsubst $(BUILD_DIR)/icons/favicon-%.png,%,$@) > $@
 
-# Phony targets
-.PHONY: all clean
+
+# Run the tests
+test:
+	@find test/ -type f -name test.sh -exec bash {} \;
+
 
 # Clean build directory
 clean:
 	rm -rf $(BUILD_DIR)/*
+
+# Phony targets
+.PHONY: all clean test
