@@ -36,6 +36,11 @@ while getopts ":r:d" opt; do
     esac
 done
 
+# Allow directories relative to current working directory
+if [[ ! $rootDir = /* ]]; then
+    rootDir="$(pwd)/$rootDir"
+fi
+
 # create directories
 # (This should be set up in the makefile, we shouldn't have to check this every invocation?)
 engineDir="${rootDir}/.engine"
@@ -69,27 +74,6 @@ getFileHash() {
     sha1sum "$1" | cut -d' ' -f1
 }
 
-
-# If command succeeds, return output
-# If command fails, return input
-pipeOrPass() {
-    local tmp_input tmp_output
-    
-    tmp_input=$(mktemp)
-    tmp_output=$(mktemp)
-    
-    trap 'rm -f "$tmp_input" "$tmp_output"' EXIT
-
-    cat > "$tmp_input"
-    
-    if "$@" < "$tmp_input" > "$tmp_output"; then
-        cat "$tmp_output"
-    else
-        cat "$tmp_input"
-    fi
-}
-
-
 # Makes an entry in the content-aware cache
 contentCache() {
     local sourcePath linkPath objectPath
@@ -102,7 +86,6 @@ contentCache() {
     local relativeObjectPath
     relativeObjectPath=$(realpath -s --relative-to="$(dirname "${linkPath}")" "${objectPath}")
     ln -s "${relativeObjectPath}" "${linkPath}"
-    ln "${objectPath}" "${linkPath}"
 }
 
 
