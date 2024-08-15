@@ -19,7 +19,6 @@ debug() {
 
 # defaults
 rootDir=$(pwd);
- 
 DEBUG=false
 
 # parse options
@@ -39,11 +38,11 @@ done
 
 # create directories
 # (This should be set up in the makefile, we shouldn't have to check this every invocation?)
-engineDir="$(scripts)/.engine"
+engineDir="${rootDir}/.engine"
 cacheDirName="cache";
 objectDirName="object";
-cacheDir="$(rootDir)/{engineDir}/${cacheDirName}";  # results of scripts on inputs
-objectDir="$(rootDir){engineDir}/${objectDirName}";  # content-addressable objects
+cacheDir="${engineDir}/${cacheDirName}";  # results of scripts on inputs
+objectDir="${engineDir}/${objectDirName}";  # content-addressable objects
 mkdir -p "${engineDir}"         
 mkdir -p "${cacheDir}"    
 mkdir -p "${objectDir}"
@@ -91,7 +90,8 @@ pipeOrPass() {
 }
 
 
-cache() {
+# Makes an entry in the content-aware cache
+contentCache() {
     local sourcePath linkPath objectPath
     sourcePath=$1
     linkPath=$2
@@ -152,9 +152,9 @@ getResultPath() {
             exitCode=$?
         fi
 
-        echo "{$exitCode}" > "${cachedExitCodePath}"
-        cache "${tempStdoutPath}" "${cachedStdoutPath}";
-        cache "${tempStderrPath}" "${cachedStderrPath}";
+        echo "${exitCode}" > "${cachedExitCodePath}"
+        contentCache "${tempStdoutPath}" "${cachedStdoutPath}";
+        contentCache "${tempStderrPath}" "${cachedStderrPath}";
     fi
 
     # Now we definitely have some output in the cache, even if it failed
