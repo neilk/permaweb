@@ -99,7 +99,9 @@ contentCache() {
     if [[ ! -f "${objectPath}" ]]; then
         mv "${sourcePath}" "${objectPath}"
     fi
-    ln -s "${objectPath}" "${linkPath}"
+    local relativeObjectPath
+    relativeObjectPath=$(realpath -s --relative-to="$(dirname "${linkPath}")" "${objectPath}")
+    ln -s "${relativeObjectPath}" "${linkPath}"
 }
 
 
@@ -207,4 +209,5 @@ if [[ -n "${extension}" ]]; then
 fi
 
 # This is either the original input path or the result of a series of scripts
+debug "input path is ${inputPath}"
 cat "$inputPath";
