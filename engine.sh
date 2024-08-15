@@ -1,20 +1,11 @@
 #!/bin/bash
 
-# We expect a "scripts" directory to exist, with directories for each file extension we 
-# want to handle. Each of these directories should contain scripts that will be executed
-# on each file of the corresponding extension. Each script must have executable permissions 
-# or it will be ignored. The scripts should be named with a number prefix, so that they 
-# are executed in the correct order.
-#
-# If any script returns a non-success exit code, its output is ignored.
-#
-# For example, if we want to handle html files, we would have the following structure:
-# scripts/        contains one directory per file extension
-#   - html        for example
-#       - 01.sh      contains a script that will be executed on each html file
-#       - 02.js      a javascript script that will be executed on each html file, after 01.sh
-#       - 02.txt     will not be executed. Presumably 02.js uses it.
-#       - 03.sh      will be executed on the output of 02.js
+# MAYBE:
+# what if we did the cache this way
+# input_hash/command_hash/
+# rc -> text file containing a single integer (or a binary file?); return code
+# 1 -> link to stdout object
+# 2 -> link to stderr object
 
 warn() {
     echo "$@" >&2;
@@ -26,32 +17,38 @@ debug() {
     fi
 }
 
-# create directories
-engineDir="$(pwd)/.engine";   # engine state
-cacheDir="${engineDir}/cache";  # results of scripts on inputs
-objectDir="${engineDir}/object";  # content-addressable objects
-mkdir -p "${engineDir}"         
-mkdir -p "${cacheDir}"    
-mkdir -p "${objectDir}"   
-
 # defaults
+rootDir=$(pwd);
+ 
 DEBUG=false
-scriptsDir="./scripts"
 
 # parse options
-while getopts ":s:d" opt; do
+while getopts ":r:d" opt; do
     case "${opt}" in
         d)
             DEBUG=true
             ;;
-        s)
-            scriptsDir="${OPTARG}"
+        r)
+            rootDir="${OPTARG}"
             ;;
         \?)
             echo "Invalid option: -$OPTARG" >&2
             ;;
     esac
 done
+
+# create directories
+# (This should be set up in the makefile, we shouldn't have to check this every invocation?)
+engineDir="$(scripts)/.engine"
+cacheDirName="cache";
+objectDirName="object";
+cacheDir="$(rootDir)/{engineDir}/${cacheDirName}";  # results of scripts on inputs
+objectDir="$(rootDir){engineDir}/${objectDirName}";  # content-addressable objects
+mkdir -p "${engineDir}"         
+mkdir -p "${cacheDir}"    
+mkdir -p "${objectDir}"
+
+scriptsDir="${rootDir}/scripts"
 
 # parse positional arguments after options
 shift $((OPTIND-1))
@@ -68,109 +65,121 @@ if [[ ! -f "$filename" ]]; then
     exit 1;
 fi
 
-
-
-
-getHashFile() {
+# given a file, get the hash
+getFileHash() {
     sha1sum "$1" | cut -d' ' -f1
 }
 
-getHashString() {
-    echo "$1" | sha1sum | cut -d' ' -f1
+
+# If command succeeds, return output
+# If command fails, return input
+pipeOrPass() {
+    local tmp_input tmp_output
+    
+    tmp_input=$(mktemp)
+    tmp_output=$(mktemp)
+    
+    trap 'rm -f "$tmp_input" "$tmp_output"' EXIT
+
+    cat > "$tmp_input"
+    
+    if "$@" < "$tmp_input" > "$tmp_output"; then
+        cat "$tmp_output"
+    else
+        cat "$tmp_input"
+    fi
 }
 
+
+cache() {
+    local sourcePath linkPath objectPath
+    sourcePath=$1
+    linkPath=$2
+    objectPath="${objectDir}/$(getFileHash "${sourcePath}")";
+    if [[ ! -f "${objectPath}" ]]; then
+        mv "${sourcePath}" "${objectPath}"
+    fi
+    ln -s "${objectPath}" "${linkPath}"
+}
+
+
+# Given an input path and a script;
+# Always prints the (cached) stderr to stderr.
+# Does not print the content to stdout; it prints the path of the resulting content.
+# Returns the exit code of the script, and/or any validation.
 getResultPath() {
     debug "";
     debug "========";
 
+    local inputPath script
     inputPath="$1"
     script="$2"
-    cacheKey="$(getHashFile "$inputPath")_$(getHashFile "$script")"
-    cachePath="${cacheDir}/${cacheKey}"
-    returnCode=0
 
-    debug "trying ${script}";
+    local cachePath cachedExitCodePath cachedStdoutPath cachedStderrPath
+    cachePath="${cacheDir}/$(getFileHash "$inputPath")/$(getFileHash "$script")"
+    cachedExitCodePath="${cachePath}/exit"
+    cachedStdoutPath="${cachePath}/1"
+    cachedStderrPath="${cachePath}/2"
     
-    if [[ (! "${DEBUG}") && (-L "${cachePath}") ]]; then
-        debug "this previously succeeded";
-        readlink -f "${cachePath}";
-        return 0;
-    else 
-        if [[ (! "${DEBUG}") && (-f "${cachePath}") ]]; then
-            debug "this previously failed, or failed to validate; not running ${script}";
-            debug "FAILED";
-            return 1;
-        else 
-            debug "running ${script} on ${inputPath}";
-            
-            # now make a temp file 
-            tempPath=$(mktemp -q "/tmp/permaweb.XXXXX" || exit 1)
-            debug "writing to ${tempPath}";
- 
-            # Set trap to clean up file
-            if ! ((DEBUG)); then
-                trap 'rm -f -- "$tempPath"' EXIT
-            fi
- 
-            # continue with script
-            debug "Using $tempPath ..."
+    debug "trying ${script}";
 
-            # execute script
-            "${script}" < "${inputPath}" > "${tempPath}" 2> >(tee -a "${cachePath}" >&2) 
-            scriptReturnCode=$?
-            # echo " == OUTPUT == " 
-            #cat "${tempPath}"
-            #echo " == END OUTPUT == " 
+    # If we have never run this before, do so and cache the results
+    if [[ ! -s "${cachedExitCodePath}" ]]; then
+        # we have never run this before
+        debug "running ${script} on ${inputPath}";
 
-            if [[ $scriptReturnCode -eq 0 ]]; then
-                debug "ran successfully";
-                rm "${cachePath}";  # remove error file
+        mkdir -p "${cachePath}"
 
-                # TODO validate other things than HTML?
-                debug "validating...";
-                # TODO why does this try to make a network connection? On a plane, with busted wifi,
-                # this blocked. But if wifi was turned off it succeeded
-                npx html-validate "${tempPath}" 1>&2
-                validationError=$?
-                if [[ "${validationError}" -ne 0 ]]; then
-                    warn "Script ${script} produced invalid html";
-                    # rm -f -- "$tempPath"
-                    trap - EXIT
-                    debug "error is ${validationError}";
-                    return "${validationError}";
-                fi
+        local tempStdoutPath tempStderrPath
+        tempStdoutPath=$(mktemp -q "/tmp/permaweb.XXXXX" || exit 1)
+        trap 'rm -f -- "$tempStdoutPath"' EXIT
+        tempStderrPath=$(mktemp -q "/tmp/permaweb.XXXXX" || exit 1)
+        trap 'rm -f -- "$tempStderrPath"' EXIT
 
-                objectPath="${objectDir}/$(getHashFile "${tempPath}")";
-                if [[ ! -f "${objectPath}" ]]; then
-                    debug "creating object ${objectPath}";
-                    mv "${tempPath}" "${objectPath}";
-                else
-                    debug "object ${objectPath} already exists";
-                    rm -f -- "$tempPath"
-                    trap - EXIT
-                fi
+        debug "writing 1 > ${tempStdoutPath}  2 > ${tempStderrPath}";
 
-                ln -s "${objectPath}" "${cachePath}";
-                readlink -f "${cachePath}";
-                return 0;
-            fi
+        # execute script
+        local exitCode
+        "${script}" < "${inputPath}" > "${tempStdoutPath}" 2>"${tempStderrPath}"
+        exitCode=$?
+
+        # TODO cache the validator
+        # validate, if possible. This can also fail the script
+        local validator
+        validator="validators/${extension}"
+        if [[ -x "$validator" ]]; then
+            "${validator}" "${tempStdoutPath}" 1>&2 2>>"${tempStderrPath}"
+            exitCode=$?
+        fi
+
+        echo "{$exitCode}" > "${cachedExitCodePath}"
+        cache "${tempStdoutPath}" "${cachedStdoutPath}";
+        cache "${tempStderrPath}" "${cachedStderrPath}";
+    fi
+
+    # Now we definitely have some output in the cache, even if it failed
+    cachedExitCode=$(<"${cachedExitCodePath}");
+    if [[ "${cachedExitCode}" -eq 0 ]]; then
+        if [[ -e "${cachedStdoutPath}" ]]; then
+            readlink "${cachedStdoutPath}"
+        fi
+        if [[ -e $cachedStderrPath ]]; then
+            cat "${cachedStderrPath}" >&2
         fi
     fi
-    warn "should never reach here -- failed";
-    return 1;
+    return "${cachedExitCode}"
 }
 
-# This framework assumes that we are always only manipulating textual content, but sometimes, 
-# we need a little more metadata about the original file. We pass those in environment variables. 
-# 
-# BREAKAWAY_SOURCE_PATH - The path of the source file, relative to the source directory if we were invoked that way
-BREAKAWAY_SOURCE_PATH=$(realpath -s --relative-to=source "${filename}");
-export BREAKAWAY_SOURCE_PATH;
+# Sometimesa a script very late in the chain will need to know the original filename - for instance, something 
+# that builds navigation. We pass this in an environment variable.
+PERMAWEB_SOURCE_PATH=$(realpath -s --relative-to=source "${filename}");
+export PERMAWEB_SOURCE_PATH;
 
-inputPath="${filename}";
+inputPath=${filename};
 
+# Build the array of scripts
+scripts=();
 if [[ -n "${extension}" ]]; then
-    scriptsDir="${scriptsDir}/${extension}"; 
     if [[ -d "${scriptsDir}" ]]; then
 
         # The first "script" is a no-op, cat, because we need to validate the file as is.
@@ -179,6 +188,7 @@ if [[ -n "${extension}" ]]; then
             scripts+=("${script}")
         done < <(find "${scriptsDir}" -type f -perm +111 -prune -print0 | sort -z)
 
+        # iterate through the array of scripts on this content
         for script in "${scripts[@]}"; do
             debug "Current input path is ${inputPath}";
 
@@ -197,10 +207,4 @@ if [[ -n "${extension}" ]]; then
 fi
 
 # This is either the original input path or the result of a series of scripts
-
-# TODO it seems very wasteful to copy with /bin/cat when it's say, a TTF file we're not doing anything with
-
-# Also, it seems not great that we only copy over, we don't remove files when they're removed
-# hmmmm we might need a more abstract way of expressing the target, instead of output redirection?
-# or, make sure the engine.sh only runs when there are scripts to execute; otherwise we do a fast link
-/bin/cat "$inputPath";
+cat "$inputPath";
