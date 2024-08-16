@@ -33,15 +33,24 @@ assert "output has charset" "$count == 1"
 count=$(grep -c '<h1' "$outputPath")
 assert "output has h1" "$count == 1"
 
-# The contents of PERMAWEB_SCRIPT_RECORD should simply be the list of scripts, in order.
-actualScriptRecord=$(<"$PERMAWEB_SCRIPT_RECORD")
-expectedScriptRecord=$(ls -1 "./scripts/html" | sort)
-matched=false
-if [ "$actualScriptRecord" == "$expectedScriptRecord" ]; then
-    matched=true
+# The contents of PERMAWEB_SCRIPT_RECORD should be as follows. 
+# The first "html" is the initial validation.
+# Then, all subsequent scripts are run, and their html is validated.
+expectedScriptRecord=$(cat << 'EOF'
+html
+10_addCharset.sh
+html
+20_addH1.sh
+html
+EOF
+)
+
+scriptRecordMatch=false
+if diff <(echo "$expectedScriptRecord") "$PERMAWEB_SCRIPT_RECORD" > /dev/null; then
+    scriptRecordMatch=true
 fi
 
-assert "first execution: all scripts ran" "$matched"
+assert "first execution: all scripts and validations ran" "$scriptRecordMatch == true"
 
 
 # ========
@@ -62,4 +71,4 @@ assert "output has h1" "$count == 1"
 
 # No script should have run
 actualScriptRecord2=$(<"$PERMAWEB_SCRIPT_RECORD")
-assert "second execution: no scripts ran" "-z $actualScriptRecord2"
+assert "second execution: no scripts or validations ran" "-z $actualScriptRecord2"
