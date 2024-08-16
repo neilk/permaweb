@@ -1,11 +1,17 @@
 #!/usr/bin/env bash
 
-# TODO why does this try to make a network connection? On a plane, with busted wifi,
-# this blocked. But if wifi was turned off it succeeded
+# To eliminate any dependencies for testing, this is the dumbest HTML validator in the world. 
+# It only counts angle brackets and sees if the number of opening and closing brackets are equal. 
 
-# Unclear why we need to explicitly specify the config file .htmlvalidate.json; it's
-# supposed to search upwards in directories for that file?  
+set -e
 
-set -e 
-cd "$(dirname "$0")" || exit 1
-npx html-validate -c .htmlvalidate.json --stdin 1>&2 
+tempFile=$(mktemp -q "/tmp/permaweb.XXXX" || exit 1) 
+trap 'rm -f -- "$tempFile"' EXIT
+
+cat > "$tempFile"
+openAngleBracketCount=$(tr -cd '<' < "$tempFile" | wc -c)
+closeAngleBracketCount=$(tr -cd '>' < "$tempFile" | wc -c)
+if [[ $openAngleBracketCount == $closeAngleBracketCount ]]; then
+    exit 0;
+fi
+exit 1;

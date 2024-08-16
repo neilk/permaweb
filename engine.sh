@@ -143,7 +143,8 @@ getResultPath() {
         exitCode=$?
 
         # TODO rather than look up the validator every time, somehow cache that
-        # validate, if possible. This can also fail the script
+        # validate, if possible. This can also fail the script.
+        # Validators must consume on stdin, and return an exit code corresponding to validity.
         local validator
         validator="$scriptsDir/validators/${extension}"
         debug "validator is $validator"
