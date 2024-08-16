@@ -5,8 +5,8 @@ set -E
 # Here we test what scripts and validations actually run. To do this, we modified the 
 # scripts and validations to log their `basename` to a file supplied by environment variable.
 #
-# We do one runthrough where all scripts and validations succeed
-# The second one should not trigger execution of any scripts or validations.
+# We do one runthrough where all scripts and validations succeed. Because everything is then cached,
+# the second one should not trigger execution of any scripts or validations.
 #
 
 testDir=$(dirname -- "$( readlink -f -- "$0"; )");
@@ -56,7 +56,6 @@ assert "first execution: all scripts and validations ran" "$scriptRecordMatch ==
 # ========
 
 # Now, do it again, with the same cache directory, logging the scripts that ran to another file. 
-# No script should run!
 PERMAWEB_SCRIPT_RECORD=$(mktemp -q "/tmp/permaweb.XXXX" || exit 1)
 export PERMAWEB_SCRIPT_RECORD
 outputPath2=$(mktemp -q "/tmp/permaweb.XXXXX" || exit 1)
@@ -69,6 +68,6 @@ assert "output has charset" "$count == 1"
 count=$(grep -c '<h1' "$outputPath2")
 assert "output has h1" "$count == 1"
 
-# No script should have run
+# no script or validation should have run
 actualScriptRecord2=$(<"$PERMAWEB_SCRIPT_RECORD")
 assert "second execution: no scripts or validations ran" "-z $actualScriptRecord2"
