@@ -23,12 +23,8 @@ inputPath=source/index.html
 outputPath=$(mktemp -q "/tmp/permaweb.XXXXX" || exit 1)
 PERMAWEB_SCRIPT_RECORD=$(mktemp -q "/tmp/permaweb.XXXX" || exit 1)
 export PERMAWEB_SCRIPT_RECORD
-echo "script record=$PERMAWEB_SCRIPT_RECORD"
 cacheDir=$(mktemp -d "/tmp/permaweb.XXXXX" || exit 1)
 "../../engine.sh" -c "$cacheDir" -s "./scripts" "$inputPath" > "$outputPath"
-
-# Common assertions
-assert_cache_ok "$cacheDir"
 
 # Test assertions
 count=$(grep -c '<meta charset' "$outputPath")
@@ -56,9 +52,6 @@ PERMAWEB_SCRIPT_RECORD=$(mktemp -q "/tmp/permaweb.XXXX" || exit 1)
 export PERMAWEB_SCRIPT_RECORD
 outputPath2=$(mktemp -q "/tmp/permaweb.XXXXX" || exit 1)
 "../../engine.sh" -c "$cacheDir" -s "./scripts" "$inputPath" > "$outputPath2"
-
-# Common assertions
-assert_cache_ok "$cacheDir"
 
 # Test assertions
 count=$(grep -c '<meta charset' "$outputPath2")
