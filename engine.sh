@@ -22,17 +22,18 @@ debug() {
 
 
 # defaults
-rootDir=$(pwd);
 DEBUG=false
+scriptsDir="scripts"
+cacheDir=".cache"
 
 # parse options
-while getopts "dr:c:" opt; do
+while getopts "ds:c:" opt; do
     case "${opt}" in
         d)
             DEBUG=true
             ;;
-        r)
-            rootDir="${OPTARG}"
+        s)
+            scriptsDir="${OPTARG}"
             ;;
         c)
             cacheDir="${OPTARG}"
@@ -43,19 +44,16 @@ while getopts "dr:c:" opt; do
     esac
 done
 
-# Allow directories relative to current working directory
-if [[ ! $rootDir = /* ]]; then
-    rootDir="$(pwd)/$rootDir"
+# Allow specified directories to be relative
+if [[ ! $scriptsDir = /* ]]; then
+    scriptsDir="$(pwd)/$scriptsDir"
 fi
-if [[ -z ${cacheDir:-} ]]; then
-    # cacheDir was not set
-    cacheDir="$rootDir/.cache"
-else 
-    # cacheDir is set. We just make sure relative directories work
-    if [[ ! $cacheDir = /* ]]; then
-        cacheDir="$(pwd)/$cacheDir"
-    fi
+
+if [[ ! $cacheDir = /* ]]; then
+    cacheDir="$(pwd)/$cacheDir"
 fi
+
+debug "scriptsDir: $scriptsDir  cacheDir $cacheDir"
 
 # create directories
 # (This should be set up in the makefile, we shouldn't have to check this every invocation?)
@@ -64,8 +62,6 @@ objectCacheDir="${cacheDir}/object";  # content-addressable objects
 mkdir -p "${cacheDir}"         
 mkdir -p "${execCacheDir}"    
 mkdir -p "${objectCacheDir}"
-
-scriptsDir="${rootDir}/scripts"
 
 # parse positional arguments after options
 shift $((OPTIND-1))

@@ -13,7 +13,7 @@ warn "$0"
 inputPath=source/index.html
 outputPath=$(mktemp -q "/tmp/permaweb.XXXXX" || exit 1)
 cacheDir=$(mktemp -d "/tmp/permaweb.XXXXX" || exit 1)
-"../../engine.sh" -c "$cacheDir" -r "." "$inputPath" > "$outputPath"
+"../../engine.sh" -c "$cacheDir" -s "./scripts" "$inputPath" > "$outputPath"
 
 # Common assertions
 assert_cache_ok "$cacheDir"
