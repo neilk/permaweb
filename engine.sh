@@ -183,7 +183,7 @@ if [[ -n "${extension}" ]]; then
         scripts=('/bin/cat');
         while IFS=  read -r -d $'\0' script; do
             scripts+=("${script}")
-        done < <(find "${scriptsDir}/${extension}" -type f -perm +111 -prune -print0 | sort -z)
+        done < <(find "${scriptsDir}/${extension}" -type f -perm -u=x -prune -print0 | sort -z)
 
         # iterate through the array of scripts on this content
         for script in "${scripts[@]}"; do
