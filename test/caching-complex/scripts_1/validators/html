@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+# To eliminate any dependencies for testing, this is the dumbest HTML validator in the world. 
+# It only counts angle brackets and sees if the number of opening and closing brackets are equal. 
+basename "$0" >> "$PERMAWEB_SCRIPT_RECORD"
+
+set -e
+
+tempFile=$(mktemp -q "/tmp/permaweb.XXXX" || exit 1) 
+trap 'rm -f -- "$tempFile"' EXIT
+
+cat > "$tempFile"
+openAngleBracketCount=$(tr -cd '<' < "$tempFile" | wc -c)
+closeAngleBracketCount=$(tr -cd '>' < "$tempFile" | wc -c)
+if [[ $openAngleBracketCount == $closeAngleBracketCount ]]; then
+    exit 0;
+fi
+exit 1;

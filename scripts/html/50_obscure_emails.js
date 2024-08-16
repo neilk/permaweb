@@ -2,7 +2,8 @@
 
 /**
  * Obscuring emails is a bit of an open question. I couldn't find any techniques
- * that worked perfectly for every case - screen readers, assistive devices, copy & paste.
+ * that worked perfectly for every case - screen readers, assistive devices, copy & paste,
+ * mobile browsers.
  */
 
 const fs = require('fs');

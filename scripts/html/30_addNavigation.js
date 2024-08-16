@@ -5,8 +5,8 @@ const path = require("path");
 const { JSDOM: jsdom } = require("jsdom");
 
 let urlsThatPointHere = [];
-if (process.env.BREAKAWAY_SOURCE_PATH) {
-    const fullUrl = path.join("/", process.env.BREAKAWAY_SOURCE_PATH);
+if (process.env.PERMAWEB_SOURCE_PATH) {
+    const fullUrl = path.join("/", process.env.PERMAWEB_SOURCE_PATH);
     urlsThatPointHere = urlsThatPointHere.concat([
         fullUrl,
         fullUrl.replace(/\/$/, ""),
@@ -21,7 +21,7 @@ async function main() {
 
     let navigationString = fs.readFileSync(`${__dirname}/navigation.html`).toString();
     let navigation = jsdom.fragment(navigationString);
-    
+
     for (const listItem of navigation.querySelectorAll("nav li")) {
         const anchor = listItem.querySelector("a");
         if (urlsThatPointHere.includes(anchor.href)) {

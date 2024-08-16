@@ -65,9 +65,28 @@ $(BUILD_DIR)/icons/favicon-%: $(FAVICON_SOURCE)
 	@mkdir -p $(ICONS_DIR)
 	./favicons.sh $< $(patsubst $(BUILD_DIR)/icons/favicon-%.png,%,$@) > $@
 
-# Phony targets
-.PHONY: all clean
+
+## TESTS 
+
+# List of test directories
+TEST_DIRS := $(filter %/, $(wildcard test/*/))
+
+# Generate test targets for each test.sh script
+TESTS := $(TEST_DIRS:%=%/test.sh)
+
+# Default target to run all tests
+test: $(TESTS)
+	@echo "\nAll tests executed." >&2
+
+# Pattern rule to run each test script
+$(TESTS):
+	@echo "\nRunning test $@" >&2
+	@bash $@ || exit 1
+
 
 # Clean build directory
 clean:
 	rm -rf $(BUILD_DIR)/*
+
+# Phony targets
+.PHONY: all clean test $(TESTS)
