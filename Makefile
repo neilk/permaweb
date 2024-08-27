@@ -51,7 +51,7 @@ all: $(HTML_TARGETS) $(IMAGE_TARGETS) $(FONT_TARGETS) $(SVG_TARGETS) $(FAVICON_T
 # Define a rule to process each HTML file
 $(BUILD_DIR)/%.html: $(SOURCE_DIR)/%.html
 	@mkdir -p $(dir $@)
-	./engine.sh $< > $@
+	./permaweb $< > $@
 
 # Rule to copy unmodified files 
 $(BUILD_DIR)/%: $(SOURCE_DIR)/% $(IMAGE_FILES) $(FONT_FILES) $(SVG_FILES)

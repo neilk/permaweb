@@ -24,7 +24,7 @@ outputPath=$(mktemp -q "/tmp/permaweb.XXXXX" || exit 1)
 PERMAWEB_SCRIPT_RECORD=$(mktemp -q "/tmp/permaweb.XXXX" || exit 1)
 export PERMAWEB_SCRIPT_RECORD
 cacheDir=$(mktemp -d "/tmp/permaweb.XXXXX" || exit 1)
-"../../engine.sh" -c "$cacheDir" -s "./scripts" "$inputPath" > "$outputPath"
+"../../permaweb" -c "$cacheDir" -s "./scripts" "$inputPath" > "$outputPath"
 
 # Test assertions
 count=$(grep -c '<meta charset' "$outputPath")
@@ -59,7 +59,7 @@ assert "first execution: all scripts and validations ran" "$scriptRecordMatch ==
 PERMAWEB_SCRIPT_RECORD=$(mktemp -q "/tmp/permaweb.XXXX" || exit 1)
 export PERMAWEB_SCRIPT_RECORD
 outputPath2=$(mktemp -q "/tmp/permaweb.XXXXX" || exit 1)
-"../../engine.sh" -c "$cacheDir" -s "./scripts" "$inputPath" > "$outputPath2"
+"../../permaweb" -c "$cacheDir" -s "./scripts" "$inputPath" > "$outputPath2"
 
 # Test assertions
 count=$(grep -c '<meta charset' "$outputPath2")
