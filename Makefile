@@ -51,12 +51,14 @@ CSS_TARGETS := $(patsubst $(SOURCE_DIR)/%, $(BUILD_DIR)/%, $(CSS_FILES))
 # TXT targets
 TXT_TARGETS := $(patsubst $(SOURCE_DIR)/%, $(BUILD_DIR)/%, $(TXT_FILES))
 
-# Favicon targets
+# Sized favicon PNG targets. You'll need meta tags in your HTML to use these.
 FAVICON_SIZES := 16 32 96
 FAVICON_TARGETS := $(addprefix $(BUILD_DIR)/icons/favicon-, $(addsuffix .png, $(FAVICON_SIZES)))
+# Traditional favicon.ico target
+FAVICON_ICO_TARGET := $(BUILD_DIR)/favicon.ico
 
 # Default target
-all: $(HTML_TARGETS) $(IMAGE_TARGETS) $(FONT_TARGETS) $(SVG_TARGETS) $(FAVICON_TARGETS) $(CSS_TARGETS) $(TXT_TARGETS)
+all: $(HTML_TARGETS) $(IMAGE_TARGETS) $(FONT_TARGETS) $(SVG_TARGETS) $(FAVICON_TARGETS) $(FAVICON_ICO_TARGET) $(CSS_TARGETS) $(TXT_TARGETS)
 
 # Define a rule to process each HTML file
 $(BUILD_DIR)/%.html: $(SOURCE_DIR)/%.html
@@ -74,7 +76,8 @@ FAVICON_SOURCE := $(METADATA_DIR)/favicon-source.png
 $(BUILD_DIR)/icons/favicon-%: $(FAVICON_SOURCE)
 	@mkdir -p $(ICONS_DIR)
 	./favicons.sh $< $(patsubst $(ICONS_DIR)/favicon-%.png,%,$@) > $@
-
+$(BUILD_DIR)/favicon.ico: $(FAVICON_TARGETS)
+	magick $(FAVICON_SOURCE) -resize "32x32" $@
 
 ## TESTS 
 
