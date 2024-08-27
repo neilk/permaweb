@@ -1,7 +1,19 @@
 # Define directories
+
+# Source files that have a more or less one-to-one relationship with the built files
 SOURCE_DIR := source
+
+# Source files that are special, like favicon images
+METADATA_DIR := metadata
+
+# Where the built files will go
 BUILD_DIR := build
+# Where the favicons will go
 ICONS_DIR := $(BUILD_DIR)/icons
+
+
+
+# Define the list(s) of files to build
 
 # Find all HTML files in the source directory
 HTML_FILES := $(shell find $(SOURCE_DIR) -type f -name '*.html')
@@ -39,8 +51,6 @@ CSS_TARGETS := $(patsubst $(SOURCE_DIR)/%, $(BUILD_DIR)/%, $(CSS_FILES))
 # TXT targets
 TXT_TARGETS := $(patsubst $(SOURCE_DIR)/%, $(BUILD_DIR)/%, $(TXT_FILES))
 
-
-
 # Favicon targets
 FAVICON_SIZES := 16 32 96
 FAVICON_TARGETS := $(addprefix $(BUILD_DIR)/icons/favicon-, $(addsuffix .png, $(FAVICON_SIZES)))
@@ -60,10 +70,10 @@ $(BUILD_DIR)/%: $(SOURCE_DIR)/% $(IMAGE_FILES) $(FONT_FILES) $(SVG_FILES)
 
 # Rule to create favicons
 # the complex patsubst is needed to extract just the size from the target filename
-FAVICON_SOURCE := ./neilk-avatar.png
+FAVICON_SOURCE := $(METADATA_DIR)/favicon-source.png
 $(BUILD_DIR)/icons/favicon-%: $(FAVICON_SOURCE)
 	@mkdir -p $(ICONS_DIR)
-	./favicons.sh $< $(patsubst $(BUILD_DIR)/icons/favicon-%.png,%,$@) > $@
+	./favicons.sh $< $(patsubst $(ICONS_DIR)/favicon-%.png,%,$@) > $@
 
 
 ## TESTS 
