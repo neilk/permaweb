@@ -55,6 +55,8 @@ fi
 
 debug "scriptsDir: $scriptsDir  cacheDir $cacheDir"
 
+
+
 # create directories
 # (This should be set up in the makefile, we shouldn't have to check this every invocation?)
 execCacheDir="${cacheDir}/exec";  # results of scripts on inputs
@@ -66,6 +68,7 @@ mkdir -p "${objectCacheDir}"
 # parse positional arguments after options
 shift $((OPTIND-1))
 
+# check for filename
 filename="$1"
 if [[ -z "${filename}" ]]; then
     warn "No filename provided";
@@ -83,7 +86,9 @@ getFileHash() {
     sha1sum "$1" | cut -d' ' -f1
 }
 
-# Makes an entry in the content-aware cache
+# Makes an entry in the content-addressed cache
+# This is actually just a link to the object cache, which contains all unique content. There may be
+# many entries in the content cache that point to the same object.
 contentCache() {
     local sourcePath linkPath objectPath
     sourcePath=$1
@@ -98,11 +103,15 @@ contentCache() {
 }
 
 
-# Given an input path and a script;
-# Always prints the (cached) stderr to stderr.
-# Does not print the content to stdout; it prints the path of the resulting content.
-# Returns the exit code of the script, and/or any validation.
-getResultPath() {
+# Given an input path and a script, obtain the complete results - stdout, stderr, exit code -
+# as if we ran that script and validation on exactly that input. This may be obtained
+# from cache. The cache is keyed by the hashed content of the input file and script file.
+#
+# So, for the script && validation:
+#   Echoes the path to a file caching the stdout;
+#   Echoes the stderr to stderr.
+#   Returns the exit code of the script && validation.
+getCachedValidatedResultPath() {
     debug "";
     debug "========";
 
@@ -138,14 +147,8 @@ getResultPath() {
         "${script}" < "${inputPath}" > "${tempStdoutPath}" 2>"${tempStderrPath}"
         exitCode=$?
 
-        # TODO rather than look up the validator every time, somehow cache that
-        # validate, if possible. This can also fail the script.
-        # Validators must consume on stdin, and return an exit code corresponding to validity.
-        local validator
-        validator="$scriptsDir/validators/${extension}"
-        debug "validator is $validator"
-        if [[ -x "$validator" ]]; then
-            debug "running validator"
+        if [[ -n "$validator" ]]; then
+            debug "running validator ${validator}";
             "${validator}" < "${tempStdoutPath}" 1>&2 2>>"${tempStderrPath}"
             exitCode=$?
         fi
@@ -175,6 +178,15 @@ export PERMAWEB_SOURCE_PATH;
 
 inputPath=${filename};
 
+# Get the validator for this extension, if there is one
+validatorsDir="$scriptsDir/validators"
+if [[ -d "$validatorsDir" ]]; then
+    validatorPath="${validatorsDir}/${extension}"
+    if [[ -f "$validatorPath" && -x "$validatorPath" ]]; then
+        validator="$validatorPath"
+    fi
+fi
+
 # Build the array of scripts
 scripts=();
 if [[ -n "${extension}" ]]; then
@@ -184,24 +196,25 @@ if [[ -n "${extension}" ]]; then
         while IFS=  read -r -d $'\0' script; do
             scripts+=("${script}")
         done < <(find "${scriptsDir}/${extension}" -type f -perm -u=x -prune -print0 | sort -z)
-
-        # iterate through the array of scripts on this content
-        for script in "${scripts[@]}"; do
-            debug "Current input path is ${inputPath}";
-
-            newInputPath=$(getResultPath "${inputPath}" "${script}");
-            returnCode=$?
-            debug "return code from result is ${returnCode}";
-            if [[ $returnCode -ne 0 ]]; then
-                debug "Script ${script} failed; skipping";
-                continue;
-            fi
-
-            debug "new input path is ${newInputPath}";
-            inputPath="${newInputPath}";
-        done
     fi
 fi
+
+# Iterate through the array of scripts on this content. If a script fails, discard its results. 
+# Eventually we will have a path to a file that represents only the successful transformations of the input file.
+for script in "${scripts[@]}"; do
+    debug "Current input path is ${inputPath}";
+
+    newInputPath=$(getCachedValidatedResultPath "${inputPath}" "${script}");
+    returnCode=$?
+    debug "return code from result is ${returnCode}";
+    if [[ $returnCode -ne 0 ]]; then
+        debug "Script ${script} failed; skipping";
+        continue;
+    fi
+
+    debug "new input path is ${newInputPath}";
+    inputPath="${newInputPath}";
+done
 
 # This is either the original input path or the result of a series of scripts
 debug "input path is ${inputPath}"
