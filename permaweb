@@ -192,9 +192,9 @@ if [[ -n "${extension}" ]]; then
     fi
 fi
 
-# Sometimesa a script very late in the chain will need to know the original filename - for instance, something 
-# that builds navigation. We pass this in an environment variable.
-PERMAWEB_SOURCE_PATH=$(realpath -s --relative-to=source "${filename}");
+# Sometimes a script very late in the chain will need to know the original path - for instance, something 
+# that builds navigation, involving files in the same directory. We pass this in an environment variable.
+PERMAWEB_SOURCE_PATH=$(realpath -s "${filename}");
 export PERMAWEB_SOURCE_PATH;
 
 # Iterate through the array of scripts for this content. If a script fails, discard its results. 
