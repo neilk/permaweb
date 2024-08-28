@@ -89,7 +89,7 @@ getFileHash() {
 # Makes an entry in the content-addressed cache
 # This is actually just a link to the object cache, which contains all unique content. There may be
 # many entries in the content cache that point to the same object.
-contentCache() {
+cache() {
     local sourcePath linkPath objectPath
     sourcePath=$1
     linkPath=$2
@@ -115,12 +115,12 @@ getCachedValidatedResultPath() {
     debug "";
     debug "========";
 
-    local inputPath script
-    inputPath="$1"
+    local contentPath script
+    contentPath="$1"
     script="$2"
 
     local cachePath cachedExitCodePath cachedStdoutPath cachedStderrPath
-    cachePath="${execCacheDir}/$(getFileHash "$inputPath")/$(getFileHash "$script")"
+    cachePath="${execCacheDir}/$(getFileHash "$contentPath")/$(getFileHash "$script")"
     cachedExitCodePath="${cachePath}/exit"
     cachedStdoutPath="${cachePath}/1"
     cachedStderrPath="${cachePath}/2"
@@ -130,7 +130,7 @@ getCachedValidatedResultPath() {
     # If we have never run this before, do so and cache the results
     if [[ ! -s "${cachedExitCodePath}" ]]; then
         # we have never run this before
-        debug "running ${script} on ${inputPath}";
+        debug "running ${script} on ${contentPath}";
 
         mkdir -p "${cachePath}"
 
@@ -144,7 +144,7 @@ getCachedValidatedResultPath() {
 
         # execute script
         local exitCode
-        "${script}" < "${inputPath}" > "${tempStdoutPath}" 2>"${tempStderrPath}"
+        "${script}" < "${contentPath}" > "${tempStdoutPath}" 2>"${tempStderrPath}"
         exitCode=$?
 
         if [[ -n "$validator" ]]; then
@@ -154,8 +154,8 @@ getCachedValidatedResultPath() {
         fi
 
         echo "${exitCode}" > "${cachedExitCodePath}"
-        contentCache "${tempStdoutPath}" "${cachedStdoutPath}";
-        contentCache "${tempStderrPath}" "${cachedStderrPath}";
+        cache "${tempStdoutPath}" "${cachedStdoutPath}";
+        cache "${tempStderrPath}" "${cachedStderrPath}";
     fi
 
     # Now we definitely have some output in the cache, even if it failed
@@ -170,13 +170,6 @@ getCachedValidatedResultPath() {
     fi
     return "${cachedExitCode}"
 }
-
-# Sometimesa a script very late in the chain will need to know the original filename - for instance, something 
-# that builds navigation. We pass this in an environment variable.
-PERMAWEB_SOURCE_PATH=$(realpath -s --relative-to=source "${filename}");
-export PERMAWEB_SOURCE_PATH;
-
-inputPath=${filename};
 
 # Get the validator for this extension, if there is one
 validatorsDir="$scriptsDir/validators"
@@ -199,12 +192,18 @@ if [[ -n "${extension}" ]]; then
     fi
 fi
 
-# Iterate through the array of scripts on this content. If a script fails, discard its results. 
-# Eventually we will have a path to a file that represents only the successful transformations of the input file.
-for script in "${scripts[@]}"; do
-    debug "Current input path is ${inputPath}";
+# Sometimesa a script very late in the chain will need to know the original filename - for instance, something 
+# that builds navigation. We pass this in an environment variable.
+PERMAWEB_SOURCE_PATH=$(realpath -s --relative-to=source "${filename}");
+export PERMAWEB_SOURCE_PATH;
 
-    newInputPath=$(getCachedValidatedResultPath "${inputPath}" "${script}");
+# Iterate through the array of scripts for this content. If a script fails, discard its results. 
+# Eventually we will have a path to a file that represents only the successful transformations of the original file.
+contentPath=${filename};
+for script in "${scripts[@]}"; do
+    debug "Current input path is ${contentPath}";
+
+    newContentPath=$(getCachedValidatedResultPath "${contentPath}" "${script}");
     returnCode=$?
     debug "return code from result is ${returnCode}";
     if [[ $returnCode -ne 0 ]]; then
@@ -212,10 +211,10 @@ for script in "${scripts[@]}"; do
         continue;
     fi
 
-    debug "new input path is ${newInputPath}";
-    inputPath="${newInputPath}";
+    debug "new input path is ${newContentPath}";
+    contentPath="${newContentPath}";
 done
 
-# This is either the original input path or the result of a series of scripts
-debug "input path is ${inputPath}"
-cat "$inputPath";
+# Print the successful results of the transformations
+debug "input path is ${contentPath}"
+cat "$contentPath";
