@@ -18,14 +18,16 @@ cd "$testDir" || exit
 source "$(dirname "$testDir")/lib.sh"
 trap 'handle_error $LINENO' ERR
 
-# Run the script the first time
+PERMAWEB_CACHE_DIR=$(mktemp -d "/tmp/permaweb.XXXXX" || exit 1)
+export PERMAWEB_CACHE_DIR
 
+# Run the script the first time
 inputPath=source/index.html
 outputPath1=$(mktemp -q "/tmp/permaweb.XXXXX" || exit 1)
 PERMAWEB_SCRIPT_RECORD=$(mktemp -q "/tmp/permaweb.XXXX" || exit 1)
 export PERMAWEB_SCRIPT_RECORD
-cacheDir=$(mktemp -d "/tmp/permaweb.XXXXX" || exit 1)
-"../../permaweb" -c "$cacheDir" -s "./scripts_1" "$inputPath" > "$outputPath1"
+
+"../../permaweb" -s "./scripts_1" "$inputPath" > "$outputPath1"
 
 # The contents of PERMAWEB_SCRIPT_RECORD should be as follows. 
 # The first "html" is the initial validation.
@@ -52,7 +54,7 @@ if diff <(echo "$expectedScriptRecord1") "$PERMAWEB_SCRIPT_RECORD" > /dev/null; 
     scriptRecordMatch1=true
 fi
 
-assert "first execution: all scripts and validations ran" "$scriptRecordMatch == true"
+assert "first execution: all scripts and validations ran" "$scriptRecordMatch1 == true"
 
 
 # ========
@@ -63,7 +65,7 @@ assert "first execution: all scripts and validations ran" "$scriptRecordMatch ==
 PERMAWEB_SCRIPT_RECORD=$(mktemp -q "/tmp/permaweb.XXXX" || exit 1)
 export PERMAWEB_SCRIPT_RECORD
 outputPath2=$(mktemp -q "/tmp/permaweb.XXXXX" || exit 1)
-"../../permaweb" -c "$cacheDir" -s "./scripts_2" "$inputPath" > "$outputPath2"
+"../../permaweb" -s "./scripts_2" "$inputPath" > "$outputPath2"
 
 # This is what we expect to run:
 # addStyle runs, because its script content is different now.

@@ -33,4 +33,4 @@ while IFS= read -r line || [[ -n "$line" ]]; do
   else
     echo "$line"
   fi
-done
+done < "$1"

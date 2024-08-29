@@ -8,7 +8,6 @@ title_content="Unknown title"
 title_regex="<title>(.*)</title>"
 body_regex="(.*<body.*>)(.*)"
 
-# Read from stdin line by line
 while IFS= read -r line || [[ -n "$line" ]]; do
   # Check if the line contains the <title> tag
   if [[ "$line" =~ $title_regex ]]; then
@@ -21,4 +20,4 @@ while IFS= read -r line || [[ -n "$line" ]]; do
   else
     echo "$line"
   fi
-done
+done < "$1"
