@@ -14,7 +14,11 @@ make test
 
 # Presentation
 
-This was presented at Our Networks 2024 in Vancouver, BC on 2024-06-24. You can read my [slides](https://docs.google.com/presentation/d/1Gde7SVdqOWxZ0J_2nnZgCmewxYqKj7Lin4H64TVEz2g/edit?usp=sharing) (without notes, but the content is similar to the discussion below).
+This was presented at Our Networks 2024 in Vancouver, BC on 2024-06-24. You can browse my [Google Slides](https://docs.google.com/presentation/d/1Gde7SVdqOWxZ0J_2nnZgCmewxYqKj7Lin4H64TVEz2g/edit?usp=sharing), or the static [PDF document](presentation/permaweb.pdf) here.
+
+[<img src="presentation/preview.png">](presentation.pdf)
+
+There are no notes, but the discussion is similar to the discussion below, with more diagrams.
 
 # Background
 
@@ -57,25 +61,27 @@ Design for descent (degrade gracefully)
 
 So what would a website designed for the next thirty years look like? What I embraced a little more time and trouble, and less convenience? How do I ensure that the site is easily repairable?
 
-## Few required dependencies
+## Principles 
+
+### Few required dependencies
 
 None that you don't get with a basic Linux or MacOS system today. Yes we could freeze a system in time with a tool like `docker` or NixOS. 
 
 Do you really trust that `docker` or NixOS will be around in ten years? 
 
-## Required dependencies should have a long expected lifetime
+### Required dependencies should have a long expected lifetime
 
 Also, as a rule of thumb, you should expect that you're somewhere in the middle of a technology's lifetime. If it's been around for five years, you can expect it will be viable for five more. `bash` and `make` have a continuous history since the 1980s, so they are likely going to be around for decades.
 
 That means the basic kernel is written in `bash` and `make`. Yes, `bash`. I hate it as much as you do. However, with modern IDEs and shellcheck, it is tolerable.
 
-## Embrace visual pleasure, fun, and whimsy
+### Embrace visual pleasure, fun, and whimsy
 
 I greatly admire [Dan Luu](https://danluu.com/)'s writing, and his website is certainly low maintenance. But his website is nearly unreadable on many platforms.
 
 It should be possible to indulge our creativity, fashion, and even trends, without sacrificing long-term viability.
 
-## The site *always* works
+### The site *always* works
 
 If any part of the system breaks, it doesn't affect the viability of the site. Every enhancement can break and it all still works.
 
@@ -83,14 +89,15 @@ This mandates that the "source" for the website has to either be in the final fo
 
 After many experiments I decided the best choice was HTML. That is; I will write the blog in very basic, plain HTML, and then run a series of transformations on it to build readable, enhanced, attractive HTML.
 
-## The site is always easy to update, but we don't sacrifice the principles above for convenience
+### The site is always easy to update, but we don't sacrifice the principles above for convenience
 
 It should be possible to update one's website in much less than a minute. However, optimizing for instant local views or publishing is not as important. I am not publishing a news website, and I update my blog or projects only a few times a year at most.
 
+## Implementation choices
 
-## Minimal "kernel"
+### Minimal "kernel"
 
-### The failure-embracing transformation pipeline
+#### The failure-embracing transformation pipeline
 
 This is the heart of the system. I think I might have accidentally created a new basic Unix paradigm here; I've asked around and never seen it anywhere else. 
 
@@ -119,11 +126,13 @@ pipeOrPass() {
         cat "$tmp_input"
     fi
 }
+
+pipeOrPass addSyntaxHighlighting.js < source/blogpost.html > build/blogPost.html
 ```
 
 The benefit here is that now we simply don't care about the longevity of each transformation. We can use fancy, fun, trendy tools if we want. If they break two years later, the site still works and we can still update the site, even without removing that step from the pipeline.
 
-### Pipeline defined as a series of scripts
+#### Pipeline defined as a series of scripts
 
 Each script is expected to be a very well-behaved unix program. It accepts HTML (or whatever else it processes) on standard input, prints errors and metadata to standard error, prints its transformed output to standard out, and returns a standard exit code.
 
@@ -138,7 +147,7 @@ The scripts are defined in a paradigm familiar to old-school hackers; a director
 90_addFooter.sh        # add footer just before close of body tag
 ```
 
-### Highly cacheable transformations
+#### Highly cacheable transformations
 
 These transformations are more expensive than other frameworks, because we parse and validate HTML at every step. We want to be able to write without too much interruption of flow.
 
@@ -161,6 +170,8 @@ Each of the output captured is a symbolic link pointing to an entry in `object`,
 This way, the `permaweb` framework can run the entire pipeline, and examine if it's run each script before on some input. 
 
 If it has, then it can rapidly proceed to the next step without actually running anything.
+
+If you have a step that is consistently failing, it will also print the errors to STDERR every time, so you don't forget that there's a broken step. But you'll still get, at the very minimum, your source HTML, which is publishable as is.
 
 ## Limitations?
 
