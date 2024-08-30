@@ -59,13 +59,12 @@ I thought I was making hacker-friendly choices? This was a nightmare.
 
 I came across the [Permacomputing manifesto](https://permacomputing.net/) around this time. I began thinking about what that would mean for a personal website. While I have many issues with the concept of "permaculture" — it's only a real solution for people with legal access to property - it gives us interesting constraints to creativity. In particular:
 
-Have few dependencies
-Avoid pseudosimplicity
-**Accumulate wisdom and experience 
-rather than codebase**
-Human-scale
-Hope for the best; prepare for the worst
-Design for descent (degrade gracefully)
+* Have few dependencies
+* Avoid pseudosimplicity
+* **Accumulate wisdom and experience rather than codebase**
+* Human-scale
+* Hope for the best; prepare for the worst
+* **Design for descent (degrade gracefully)**
 
 So what would a website designed for the next thirty years look like? What I embraced a little more time and trouble, and less convenience? How do I ensure that the site is easily repairable?
 
