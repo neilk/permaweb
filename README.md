@@ -14,7 +14,7 @@ make test
 
 # Presentation
 
-This was presented at Our Networks 2024 in Vancouver, BC on 2024-06-24. You can browse my [Google Slides](https://docs.google.com/presentation/d/1Gde7SVdqOWxZ0J_2nnZgCmewxYqKj7Lin4H64TVEz2g/edit?usp=sharing), or the static [PDF document](presentation/permaweb.pdf) here.
+In lieu of better documentation, you can browse a presentation made at [Our Networks 2024](https://2024.ournetworks.ca/) in Vancouver, Canada, on 2024-06-24. You can browse my [Google Slides](https://docs.google.com/presentation/d/1Gde7SVdqOWxZ0J_2nnZgCmewxYqKj7Lin4H64TVEz2g/edit?usp=sharing), or the static [PDF document](presentation/permaweb.pdf) here.
 
 [<img src="presentation/preview.png">](presentation.pdf)
 
@@ -24,11 +24,9 @@ There are no notes, but the discussion is similar to the discussion below, with 
 
 This software is available under the [MIT License](LICENSE). You can consider it open source.
 
-Be aware that this software is given to you, a unix hacker, to modify and suit your own needs. The entire point of this software is that it is so low maintenance, that you can do that yourself. 
+Be aware that this software is given to you, a Unix hacker, to modify and suit your own needs. The entire point of this software is that it is so low maintenance, that you can do that yourself, given basic Unix skills.
 
-Patches are not welcome. They will likely be ignored if they do not fit my needs. This software is deliberately hearkening back to an older model of free software. I am not taking on a community, and probably do not want one. Let this software spread like a vine, or let it just be a simple potted plant sitting on my windowsill.
-
-Fork the software, and do as thou wilt.
+Pull requests will likely be ignored capriciously. This software is deliberately hearkening back to an older model of free software. I am not taking on a community, and probably do not want one. Let this software spread like a vine, or let it just be a simple potted plant sitting on my windowsill. Fork the software, and do as thou wilt.
 
 # Background
 
