@@ -20,6 +20,16 @@ This was presented at Our Networks 2024 in Vancouver, BC on 2024-06-24. You can 
 
 There are no notes, but the discussion is similar to the discussion below, with more diagrams.
 
+# "Free as in puppy"
+
+This software is available under the [MIT License](LICENSE). You can consider it open source.
+
+Be aware that this software is given to you, a unix hacker, to modify and suit your own needs. The entire point of this software is that it is so low maintenance, that you can do that yourself. 
+
+Patches are not welcome. They will likely be ignored if they do not fit my needs. This software is deliberately hearkening back to an older model of free software. I am not taking on a community, and probably do not want one. Let this software spread like a vine, or let it just be a simple potted plant sitting on my windowsill.
+
+Fork the software, and do as thou wilt.
+
 # Background
 
 In 2012, I redid my personal website using the currently-hot static site generator. 
@@ -184,4 +194,5 @@ Even navigation links are a bit painful as they are not simple pipeline transfor
 
 I'm not sure if I'm going to give this job to custom scripts that run outside the permaweb framework, or if it's just not worth optimizing it at all. It is possible to just keep those as static files, edited as needed. I do not update the sections of my personal website very frequently.
 
+The spirit of `permaweb` is to embrace some maintenance for longevity. If your time horizon is years, or decades, and you only have one site to manage, it's far less work to simply update the navigation links of your website by hand. 
 
