@@ -57,9 +57,17 @@ Design for descent (degrade gracefully)
 
 So what would a website designed for the next thirty years look like? What I embraced a little more time and trouble, and less convenience? How do I ensure that the site is easily repairable?
 
-## No required dependencies
+## Few required dependencies
 
-None that you don't get with a basic Linux or MacOS system today. That means the basic kernel is written in `bash` and `make`. Yes, `bash`. I hate it as much as you do. However, with modern IDEs and shellcheck, it is tolerable.
+None that you don't get with a basic Linux or MacOS system today. Yes we could freeze a system in time with a tool like `docker` or NixOS. 
+
+Do you really trust that `docker` or NixOS will be around in ten years? 
+
+## Required dependencies should have a long expected lifetime
+
+Also, as a rule of thumb, you should expect that you're somewhere in the middle of a technology's lifetime. If it's been around for five years, you can expect it will be viable for five more. `bash` and `make` have a continuous history since the 1980s, so they are likely going to be around for decades.
+
+That means the basic kernel is written in `bash` and `make`. Yes, `bash`. I hate it as much as you do. However, with modern IDEs and shellcheck, it is tolerable.
 
 ## Embrace visual pleasure, fun, and whimsy
 
