@@ -1,6 +1,6 @@
 # Permaweb
 
-A framework for a personal website to last 30 years
+A framework for a personal website, designed to last for decades, if you have basic Unix skills.
 
 # How to use it 
 
