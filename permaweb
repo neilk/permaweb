@@ -164,9 +164,9 @@ getCachedValidatedResultPath() {
         if [[ -e "${cachedStdoutPath}" ]]; then
             echo "$(dirname "${cachedStdoutPath}")/$(readlink "${cachedStdoutPath}")"
         fi
-        if [[ -e $cachedStderrPath ]]; then
-            cat "${cachedStderrPath}" >&2
-        fi
+    fi
+    if [[ -e $cachedStderrPath ]]; then
+        cat "${cachedStderrPath}" >&2
     fi
     return "${cachedExitCode}"
 }
