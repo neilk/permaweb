@@ -12,6 +12,9 @@ BUILD_DIR := build
 ICONS_DIR := $(BUILD_DIR)/icons
 
 
+# In case we are being called from some other directory?
+MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
+MKFILE_DIR := $(dir $(MKFILE_PATH))
 
 # Define the list(s) of files to build
 
@@ -63,7 +66,7 @@ all: $(HTML_TARGETS) $(IMAGE_TARGETS) $(FONT_TARGETS) $(SVG_TARGETS) $(FAVICON_T
 # Define a rule to process each HTML file
 $(BUILD_DIR)/%.html: $(SOURCE_DIR)/%.html
 	@mkdir -p $(dir $@)
-	./permaweb $< > $@
+	$(MKFILE_DIR)/permaweb $< > $@
 
 # Rule to copy unmodified files 
 $(BUILD_DIR)/%: $(SOURCE_DIR)/% $(IMAGE_FILES) $(FONT_FILES) $(SVG_FILES)
