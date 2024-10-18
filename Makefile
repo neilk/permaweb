@@ -99,6 +99,9 @@ $(TESTS):
 	@echo "\nRunning test $@" >&2
 	@bash $@ || exit 1
 
+SOURCES := $(HTML_FILES) $(IMAGE_FILES) $(FONT_FILES) $(SVG_FILES) $(FAVICON_FILES) $(CSS_FILES) $(TXT_FILES)
+sources:
+	$(info $(SOURCES))
 
 # Clean build directory
 clean:
