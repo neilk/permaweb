@@ -115,26 +115,26 @@ For example, let's say we had a transformation that added a navigation header to
 It's a bit hard to see in the code itself, but if it were extracted from the kernel, it would look like this:
 
 ```bash
+#!/bin/bash
 # If command succeeds, return output
 # If command fails, return input
-pipeOrPass() {
-    local tmp_input tmp_output
 
-    tmp_input=$(mktemp)
-    tmp_output=$(mktemp)
+# NOTE: this code is deliberately simple and vulnerable to many issues.
+# It is just to illustrate the concept
 
-    trap 'rm -f "$tmp_input" "$tmp_output"' EXIT
+if [ $# -ne 1 ]; then
+    echo "Usage: $0 <executable>" >&2
+    exit 1
+fi
 
-    cat > "$tmp_input"
+EXECUTABLE="$1"
 
-    if "$@" < "$tmp_input" > "$tmp_output"; then
-        cat "$tmp_output"
-    else
-        cat "$tmp_input"
-    fi
-}
+# Read stdin into a variable without using cat
+read -d '' -r INPUT
 
-pipeOrPass addSyntaxHighlighting.js < source/blogpost.html > build/blogPost.html
+# Run once, capturing output and using exit code to determine which to echo
+OUTPUT=$("$EXECUTABLE" <<< "$INPUT") && echo "$OUTPUT" || echo "$INPUT"
+
 ```
 
 The benefit here is that now we simply don't care about the longevity of each transformation. We can use fancy, fun, trendy tools if we want. If they break two years later, the site still works and we can still update the site, even without removing that step from the pipeline.
