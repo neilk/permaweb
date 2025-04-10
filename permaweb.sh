@@ -241,7 +241,7 @@ if [[ -n "${extension}" ]]; then
             if [[ -f "$script" && -x "$script" ]] || isScriptDir "$script"; then
                 scripts+=("$script")
             fi
-        done < <(find "${scriptsDir}/${extension}" -mindepth 1 -maxdepth 1 -not -path "*/\.*" -print0 | sort -z)
+        done < <(find "${scriptsDir}/${extension}" -mindepth 1 -maxdepth 1 -print0 | sort -z)
     fi
 fi
 

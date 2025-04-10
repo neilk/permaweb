@@ -7,16 +7,47 @@ cd "$testDir" || exit
 source "$(dirname "$testDir")/lib.sh"
 trap 'handle_error $LINENO' ERR
 
-# Test for directory-based scripts with dependent files
-# The structure is:
-# - scripts/html/10_addHeader/main.sh (executable entry point)
-# - scripts/html/10_addHeader/header.html (dependent data file)
 
-# Run the initial test
+warn "$0"
+
+# Test for directory-based scripts with dependent files
+
+# Run permaweb, with an environment variable, PERMAWEB_SCRIPT_RECORD, to tell it to record what got executed
+
 inputPath=source/index.html
 outputPath=$(mktemp -q "/tmp/permaweb.XXXXX" || exit 1)
+PERMAWEB_SCRIPT_RECORD=$(mktemp -q "/tmp/permaweb.XXXX" || exit 1)
+export PERMAWEB_SCRIPT_RECORD
 cacheDir=$(mktemp -d "/tmp/permaweb.XXXXX" || exit 1)
 ../../permaweb -d -c "$cacheDir" -s "./scripts" "$inputPath" > "$outputPath"
+
+warn "PERMAWEB_SCRIPT_RECORD: $PERMAWEB_SCRIPT_RECORD"
+warn "script_record:"
+cat "$PERMAWEB_SCRIPT_RECORD"
+warn "end script record"
+
+# The contents of PERMAWEB_SCRIPT_RECORD should be as follows. 
+# The first "html" is the initial validation.
+# Then, all subsequent scripts are run, and their html is validated.
+expectedScriptRecord=$(cat << 'EOF'
+html
+10_addHeader/main.sh
+html
+15_addCharset.sh
+html
+20_addFooter/main
+html
+EOF
+)
+
+scriptRecordMatch=false
+if diff <(echo "$expectedScriptRecord") "$PERMAWEB_SCRIPT_RECORD" > /dev/null; then
+    scriptRecordMatch=true
+fi
+
+assert "all scripts and validations ran" "$scriptRecordMatch == true"
+
+
 
 # Common assertions
 assert_cache_ok "$cacheDir"

@@ -3,13 +3,14 @@
 # Get the script's directory to locate the header.html file
 SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 
-# Read the input HTML from stdin
-html=$(cat)
+# sed requires this for multiline content
+escape_newlines() {
+    awk '{printf "%s\\n", $0}' "$1"
+}
+
+# This script demonstrates using a dependent file (header.html) in the same directory
+newline_escaped_header=$(escape_newlines "${SCRIPT_DIR}/header.html")
+
 
 # Insert the header after the body tag
-# This script demonstrates using a dependent file (header.html) in the same directory
-header_content=$(cat "${SCRIPT_DIR}/header.html")
-html_with_header=$(echo "$html" | sed -E "s|<body>|<body>\n${header_content}|g")
-
-# Output the modified HTML
-echo "$html_with_header"
+sed -E "s|<body>|<body>\n${newline_escaped_header}|g"

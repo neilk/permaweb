@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+footer_content="<footer>Inserted Footer</footer>"
+
+# Insert the footer at the end of the body tag
+sed -E "s|</body>|${footer_content}</body>|g"
+
