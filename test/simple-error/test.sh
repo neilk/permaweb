@@ -22,7 +22,6 @@ PERMAWEB_TEST_ERROR_NUMBER=$(shuf -i 1-10000 -n 1)
 # also save it for later; see below
 ORIGINAL_PERMAWEB_TEST_ERROR_NUMBER=$PERMAWEB_TEST_ERROR_NUMBER
 export PERMAWEB_TEST_ERROR_NUMBER
-echo "Number: $PERMAWEB_TEST_ERROR_NUMBER"
 
 "../../permaweb" -c "$cacheDir" -s "./scripts" "$inputPath" > "$outputPath" 2> "$errorPath"
 
