@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+# To know which scripts ran, we output our path here.
+realpath --relative-to="$PERMAWEB_SCRIPT_RECORD_BASE" "$(readlink -f "$0")" >> "$PERMAWEB_SCRIPT_RECORD"
+
+
+footer_content="<footer>Inserted Footer</footer>"
+
+# Insert the footer at the end of the body tag
+sed -E "s|</body>|${footer_content}</body>|g"
+

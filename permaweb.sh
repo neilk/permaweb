@@ -81,9 +81,54 @@ if [[ ! -f "$filename" ]]; then
     exit 1;
 fi
 
+# Add this function to compute a composite hash for a directory
+getDirHash() {
+    local dir="$1"
+    find "$dir" -type f -print0 | sort -z | xargs -0 sha1sum | sha1sum | cut -d' ' -f1
+}
+
+# Find the executable entry point in a script directory
+# Convention: use 'main' or 'main.*' as the entry point
+findScriptEntry() {
+    find "$1" -maxdepth 1 -type f \( -name "main" -o -name "main.*" \) -perm -u=x | head -1
+}
+
+# Function to determine if script is directory-based with an executable entry point
+isScriptDir() {
+    local path="$1"
+    local entry=""
+    
+    if [[ -d "$path" ]]; then
+        entry=$(findScriptEntry "$path")
+        [[ -n "$entry" && -x "$entry" ]]
+        return $?
+    fi
+    return 1
+}
+
+# Get script executable path (either script file or entry point in directory)
+getScriptExec() {
+    local script="$1"
+    if isScriptDir "$script"; then
+        findScriptEntry "$script"
+    else
+        echo "$script"
+    fi
+}
+
 # given a file, get the hash
 getFileHash() {
     sha1sum "$1" | cut -d' ' -f1
+}
+
+# Get hash for a script item (file or directory)
+getItemHash() {
+    local item="$1"
+    if isScriptDir "$item"; then
+        getDirHash "$item"
+    else
+        getFileHash "$item"
+    fi
 }
 
 # Makes an entry in the content-addressed cache
@@ -115,22 +160,23 @@ getCachedValidatedResultPath() {
     debug "";
     debug "========";
 
-    local contentPath script
+    local contentPath script scriptExec
     contentPath="$1"
     script="$2"
+    scriptExec=$(getScriptExec "$script")
 
     local cachePath cachedExitCodePath cachedStdoutPath cachedStderrPath
-    cachePath="${execCacheDir}/$(getFileHash "$contentPath")/$(getFileHash "$script")"
+    cachePath="${execCacheDir}/$(getFileHash "$contentPath")/$(getItemHash "$script")"
     cachedExitCodePath="${cachePath}/exit"
     cachedStdoutPath="${cachePath}/1"
     cachedStderrPath="${cachePath}/2"
     
-    debug "trying ${script}";
+    debug "trying ${script} (exec: ${scriptExec})";
 
     # If we have never run this before, do so and cache the results
     if [[ ! -s "${cachedExitCodePath}" ]]; then
         # we have never run this before
-        debug "running ${script} on ${contentPath}";
+        debug "running ${scriptExec} on ${contentPath}";
 
         mkdir -p "${cachePath}"
 
@@ -144,8 +190,8 @@ getCachedValidatedResultPath() {
 
         # execute script
         local exitCode
-        debug "${script} < ${contentPath} > ${tempStdoutPath} 2>${tempStderrPath}"
-        "${script}" < "${contentPath}" > "${tempStdoutPath}" 2>"${tempStderrPath}"
+        debug "${scriptExec} < ${contentPath} > ${tempStdoutPath} 2>${tempStderrPath}"
+        "${scriptExec}" < "${contentPath}" > "${tempStdoutPath}" 2>"${tempStderrPath}"
         exitCode=$?
 
         if [[ -n "$validator" ]]; then
@@ -188,8 +234,11 @@ if [[ -n "${extension}" ]]; then
         # The first "script" is a no-op, cat, because we need to validate the file as is.
         scripts=('/bin/cat');
         while IFS=  read -r -d $'\0' script; do
-            scripts+=("${script}")
-        done < <(find "${scriptsDir}/${extension}" -type f -perm -u=x -prune -print0 | sort -z)
+            # Accept both executable files and directories containing main.* or main
+            if [[ -f "$script" && -x "$script" ]] || isScriptDir "$script"; then
+                scripts+=("$script")
+            fi
+        done < <(find "${scriptsDir}/${extension}" -mindepth 1 -maxdepth 1 -print0 | sort -z)
     fi
 fi
 
