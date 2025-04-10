@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# To know which scripts ran, we output our path here.
+realpath --relative-to="$PERMAWEB_SCRIPT_RECORD_BASE" "$(readlink -f "$0")" >> "$PERMAWEB_SCRIPT_RECORD"
+
 # Get the script's directory to locate the header.html file
 SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 
