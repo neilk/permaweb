@@ -90,10 +90,7 @@ getDirHash() {
 # Find the executable entry point in a script directory
 # Convention: use 'main' or 'main.*' as the entry point
 findScriptEntry() {
-    local dir="$1"
-    
-    # Find any executable file named 'main*' (compatible with both Linux and macOS)
-    find "$dir" -maxdepth 1 -type f -name "main*" -perm +111 | head -1
+    find "$1" -maxdepth 1 -type f \( -name "main" -o -name "main.*" \) -perm -u=x | head -1
 }
 
 # Function to determine if script is directory-based with an executable entry point
