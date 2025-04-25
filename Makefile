@@ -99,6 +99,9 @@ $(BUILD_DIR)/%.html: $(SOURCE_DIR)/%.html
 	# And atomically update our actual target
 	mv $(TMP_FINAL_TARGET) $@
 
+# TODO: map-reduce files. e.g. gather all HTML and produce RSS feeds.
+# TODO: how do we know where to put the reduced file? It's not implicit as in the HTML case.
+
 # Rule to copy unmodified files 
 $(BUILD_DIR)/%: $(SOURCE_DIR)/% $(IMAGE_FILES) $(FONT_FILES) $(SVG_FILES)
 	@mkdir -p $(dir $@)

@@ -60,13 +60,9 @@ debug "scriptsDir: $scriptsDir  cacheDir: $cacheDir  outputDir: $outputDir"
 # create directories
 execCacheDir="${cacheDir}/exec"
 objectCacheDir="${cacheDir}/object"
-mapCacheDir="${cacheDir}/map"   # Cache for map script outputs
-reduceCacheDir="${cacheDir}/reduce"   # Cache for reduce script outputs
 mkdir -p "${cacheDir}"
 mkdir -p "${execCacheDir}"
 mkdir -p "${objectCacheDir}"
-mkdir -p "${mapCacheDir}"
-mkdir -p "${reduceCacheDir}"
 
 # parse positional arguments after options
 shift $((OPTIND-1))
@@ -173,7 +169,7 @@ process_file_with_map() {
     fi
     
     # Cache path for this file+map combination
-    cachePath="${mapCacheDir}/${fileHash}/${scriptHash}"
+    cachePath="${cacheDir}/${fileHash}/${scriptHash}"
     cachedExitCodePath="${cachePath}/exit"
     cachedStdoutPath="${cachePath}/1"
     cachedStderrPath="${cachePath}/2"
@@ -263,7 +259,7 @@ process_with_reduce() {
     fi
     
     # Cache path for this reduce operation
-    local cachePath="${reduceCacheDir}/${inputsHash}/${scriptHash}"
+    local cachePath="${cacheDir}/${inputsHash}/${scriptHash}"
     local cachedExitCodePath="${cachePath}/exit"
     local cachedStdoutPath="${cachePath}/1"
     local cachedStderrPath="${cachePath}/2"
