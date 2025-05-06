@@ -7,9 +7,6 @@ cd "$testDir" || exit
 source "$(dirname "$testDir")/lib.sh"
 trap 'handle_error $LINENO' ERR
 
-
-warn "$0"
-
 # Test for directory-based scripts with dependent files
 
 # Run permaweb, with an environment variable, PERMAWEB_SCRIPT_RECORD, to tell it to record what got executed
