@@ -24,8 +24,7 @@ assert() {
   message=$1
   assertion=$2
 
-  # shellcheck disable=SC2086
-  if [ ! $assertion ] 
+  if [ ! "$assertion" ] 
   then
     warn "𐄂 $message"
     exit $E_ASSERT_FAILED
