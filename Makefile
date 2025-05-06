@@ -122,7 +122,7 @@ $(FAVICON_ICO_TARGET): $(FAVICON_TARGETS)
 TEST_DIRS := $(filter %/, $(wildcard test/*/))
 
 # Generate test targets for each test.sh script
-TESTS := $(TEST_DIRS:%=%/test.sh)
+TESTS := $(TEST_DIRS:%=%test.sh)
 
 # Default target to run all tests
 test: $(TESTS)
