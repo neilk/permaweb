@@ -34,6 +34,9 @@ FONT_FILES := $(shell find $(SOURCE_DIR) -type f -name '*.ttf')
 # Miscellaneous, icon files in SVG
 SVG_FILES := $(shell find $(SOURCE_DIR) -type f -name '*.svg')
 
+# PDFs
+PDF_FILES := $(shell find $(SOURCE_DIR) -type f -name '*.pdf')
+
 # Style
 CSS_FILES := $(shell find $(SOURCE_DIR) -type f -name '*.css')
 
@@ -55,6 +58,9 @@ FONT_TARGETS := $(patsubst $(SOURCE_DIR)/%, $(BUILD_DIR)/%, $(FONT_FILES))
 # Generate the list of targets to build for SVG files
 SVG_TARGETS := $(patsubst $(SOURCE_DIR)/%, $(BUILD_DIR)/%, $(SVG_FILES))
 
+# Generate the list of targets to build for SVG files
+PDF_TARGETS := $(patsubst $(SOURCE_DIR)/%, $(BUILD_DIR)/%, $(PDF_FILES))
+
 # CSS targets
 CSS_TARGETS := $(patsubst $(SOURCE_DIR)/%, $(BUILD_DIR)/%, $(CSS_FILES))
 
@@ -72,7 +78,7 @@ FAVICON_TARGETS := $(addprefix $(BUILD_DIR)/icons/favicon-, $(addsuffix .png, $(
 FAVICON_ICO_TARGET := $(BUILD_DIR)/favicon.ico
 
 # Default target
-all: $(HTML_TARGETS) $(IMAGE_TARGETS) $(FONT_TARGETS) $(SVG_TARGETS) $(FAVICON_TARGETS) $(FAVICON_ICO_TARGET) $(CSS_TARGETS) $(TXT_TARGETS) $(JS_TARGETS)
+all: $(HTML_TARGETS) $(IMAGE_TARGETS) $(FONT_TARGETS) $(SVG_TARGETS) $(PDF_TARGETS) $(FAVICON_TARGETS) $(FAVICON_ICO_TARGET) $(CSS_TARGETS) $(TXT_TARGETS) $(JS_TARGETS)
 
 # Define a rule to process each HTML file
 # This is conceptually very simple; we invoke permaweb on the origin file and write to a target file. 
