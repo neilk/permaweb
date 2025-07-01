@@ -1,19 +1,10 @@
 #!/bin/bash
+. "$(dirname "$0")/lib.sh"
 # Map-reduce extension to permaweb
 # Takes a source directory, runs map scripts on each file, then reduce scripts on the results
 # Usage: permaweb-mr.sh [-d] [-s scripts_dir] [-c cache_dir] [-o output_dir] source_dir target_file
 
 set -e
-
-warn() {
-    echo "$@" >&2;
-}
-
-debug() {
-    if "${DEBUG}"; then
-        warn "$@"
-    fi
-}
 
 # defaults
 DEBUG=false
@@ -89,16 +80,6 @@ fi
 # Function to get a file's extension
 get_extension() {
     echo "${1##*.}"
-}
-
-# Functions for hashing (reused from permaweb.sh)
-getDirHash() {
-    local dir="$1"
-    find "$dir" -type f -print0 | sort -z | xargs -0 sha1sum | sha1sum | cut -d' ' -f1
-}
-
-getFileHash() {
-    sha1sum "$1" | cut -d' ' -f1
 }
 
 # Function to find executables with specific prefixes in a directory

@@ -1,4 +1,5 @@
 #!/bin/bash
+. "$(dirname "$0")/lib.sh"
 # set -E
 #
 #handle_error() {
@@ -8,17 +9,6 @@
 #    exit $retval
 #}
 #trap 'handle_error $LINENO' ERR
-
-
-warn() {
-    echo "$@" >&2;
-}
-
-debug() {
-    if "${DEBUG}"; then
-        warn "$@"
-    fi
-}
 
 
 # defaults
@@ -81,12 +71,6 @@ if [[ ! -f "$filename" ]]; then
     exit 1;
 fi
 
-# Add this function to compute a composite hash for a directory
-getDirHash() {
-    local dir="$1"
-    find "$dir" -type f -print0 | sort -z | xargs -0 sha1sum | sha1sum | cut -d' ' -f1
-}
-
 # Find the executable entry point in a script directory
 # Convention: use 'main' or 'main.*' as the entry point
 findScriptEntry() {
@@ -116,21 +100,6 @@ getScriptExec() {
     fi
 }
 
-# given a file, get the hash
-getFileHash() {
-    sha1sum "$1" | cut -d' ' -f1
-}
-
-# Get hash for a script item (file or directory)
-getItemHash() {
-    local item="$1"
-    if isScriptDir "$item"; then
-        getDirHash "$item"
-    else
-        getFileHash "$item"
-    fi
-}
-
 # Makes an entry in the content-addressed cache
 # This is actually just a link to the object cache, which contains all unique content. There may be
 # many entries in the content cache that point to the same object.
@@ -147,6 +116,14 @@ cache() {
     ln -s "${relativeObjectPath}" "${linkPath}"
 }
 
+getItemHash() {
+    local item="$1"
+    if isScriptDir "$item"; then
+        getDirHash "$item"
+    else
+        getFileHash "$item"
+    fi
+}
 
 # Given an input path and a script, obtain the complete results - stdout, stderr, exit code -
 # as if we ran that script and validation on exactly that input. This may be obtained
