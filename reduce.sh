@@ -114,19 +114,7 @@ get_script_entry() {
     done
 }
 
-# Cache function (reused from permaweb.sh)
-cache() {
-    local sourcePath linkPath objectPath
-    sourcePath=$1
-    linkPath=$2
-    objectPath="${objectCacheDir}/$(getFileHash "${sourcePath}")";
-    if [[ ! -f "${objectPath}" ]]; then
-        mv "${sourcePath}" "${objectPath}"
-    fi
-    local relativeObjectPath
-    relativeObjectPath=$(realpath -s --relative-to="$(dirname "${linkPath}")" "${objectPath}")
-    ln -sf "${relativeObjectPath}" "${linkPath}"
-}
+
 
 # Process a single file with the map script and return the map result path
 process_file_with_map() {

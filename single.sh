@@ -100,22 +100,6 @@ getScriptExec() {
     fi
 }
 
-# Makes an entry in the content-addressed cache
-# This is actually just a link to the object cache, which contains all unique content. There may be
-# many entries in the content cache that point to the same object.
-cache() {
-    local sourcePath linkPath objectPath
-    sourcePath=$1
-    linkPath=$2
-    objectPath="${objectCacheDir}/$(getFileHash "${sourcePath}")";
-    if [[ ! -f "${objectPath}" ]]; then
-        mv "${sourcePath}" "${objectPath}"
-    fi
-    local relativeObjectPath
-    relativeObjectPath=$(realpath -s --relative-to="$(dirname "${linkPath}")" "${objectPath}")
-    ln -s "${relativeObjectPath}" "${linkPath}"
-}
-
 getItemHash() {
     local item="$1"
     if isScriptDir "$item"; then
