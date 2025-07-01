@@ -44,7 +44,7 @@ outputFile="$outputDir/linecount.txt"
 
 # Run the map-reduce process
 doMapReduce() {
-    ../../permaweb-mr.sh -c "$cacheDir" -s "./reducers" -o "$outputDir" "source"
+    ../../reduce.sh -c "$cacheDir" -s "./reducers" -o "$outputDir" "source"
 }
 
 # We'll watch these files to see if the map and reduce scripts ran

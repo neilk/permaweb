@@ -77,8 +77,23 @@ FAVICON_TARGETS := $(addprefix $(BUILD_DIR)/icons/favicon-, $(addsuffix .png, $(
 # Traditional favicon.ico target
 FAVICON_ICO_TARGET := $(BUILD_DIR)/favicon.ico
 
+# This is going to run in its entirety on every build. 
+# This is going to rely significantly on caching if it's going to be fast.
+# This will fail if the build directory doesn't exist... because we don't know where it is, we're delegating that to reduce.sh
+mapreduce:
+	@echo "Map-reduce targets"
+
+	$(MKFILE_DIR)/reduce.sh
+
+	$(shell touch -t $(MAKE_START_TIME) $(TMP_FINAL_TARGET))
+
+	mv $(TMP_FINAL_TARGET) $@
+
+
+file_targets: $(HTML_TARGETS) $(IMAGE_TARGETS) $(FONT_TARGETS) $(SVG_TARGETS) $(PDF_TARGETS) $(FAVICON_TARGETS) $(FAVICON_ICO_TARGET) $(CSS_TARGETS) $(TXT_TARGETS) $(JS_TARGETS)
+
 # Default target
-all: $(HTML_TARGETS) $(IMAGE_TARGETS) $(FONT_TARGETS) $(SVG_TARGETS) $(PDF_TARGETS) $(FAVICON_TARGETS) $(FAVICON_ICO_TARGET) $(CSS_TARGETS) $(TXT_TARGETS) $(JS_TARGETS)
+all: file_targets
 
 # Define a rule to process each HTML file
 # This is conceptually very simple; we invoke permaweb on the origin file and write to a target file. 
@@ -94,7 +109,8 @@ all: $(HTML_TARGETS) $(IMAGE_TARGETS) $(FONT_TARGETS) $(SVG_TARGETS) $(PDF_TARGE
 # Finally we fiddle with the mtime of the target file to match the invocation of this Makefile.
 # This ensures that if the source files change while this Makefile is running,
 # a subsequent invocation of `make` will notice the targets are out of date.
-
+#
+# TODO: maybe the script should handle tempfiles itself?
 $(BUILD_DIR)/%.html: $(SOURCE_DIR)/%.html
 	@mkdir -p $(dir $@)
 
@@ -105,8 +121,6 @@ $(BUILD_DIR)/%.html: $(SOURCE_DIR)/%.html
 	# And atomically update our actual target
 	mv $(TMP_FINAL_TARGET) $@
 
-# TODO: map-reduce files. e.g. gather all HTML and produce RSS feeds.
-# TODO: how do we know where to put the reduced file? It's not implicit as in the HTML case.
 
 # Rule to copy unmodified files 
 $(BUILD_DIR)/%: $(SOURCE_DIR)/% $(IMAGE_FILES) $(FONT_FILES) $(SVG_FILES)
