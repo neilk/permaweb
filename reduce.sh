@@ -121,7 +121,7 @@ cache() {
     linkPath=$2
     objectPath="${objectCacheDir}/$(getFileHash "${sourcePath}")";
     if [[ ! -f "${objectPath}" ]]; then
-        cp "${sourcePath}" "${objectPath}"
+        mv "${sourcePath}" "${objectPath}"
     fi
     local relativeObjectPath
     relativeObjectPath=$(realpath -s --relative-to="$(dirname "${linkPath}")" "${objectPath}")
