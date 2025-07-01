@@ -12,15 +12,13 @@
 
 
 # defaults
-DEBUG=false
 scriptsDir="scripts"
-cacheDir=".cache"
 
 # parse options
 while getopts "ds:c:" opt; do
     case "${opt}" in
         d)
-            DEBUG=true
+            setDebug true
             ;;
         s)
             scriptsDir="${OPTARG}"
@@ -45,15 +43,7 @@ fi
 
 debug "scriptsDir: $scriptsDir  cacheDir $cacheDir"
 
-
-
-# create directories
-# (This should be set up in the makefile, we shouldn't have to check this every invocation?)
-execCacheDir="${cacheDir}/exec";  # results of scripts on inputs
-objectCacheDir="${cacheDir}/object";  # content-addressable objects
-mkdir -p "${cacheDir}"         
-mkdir -p "${execCacheDir}"    
-mkdir -p "${objectCacheDir}"
+setupCache "$cacheDir";
 
 # parse positional arguments after options
 shift $((OPTIND-1))
@@ -126,67 +116,13 @@ getCachedValidatedResultPath() {
     script="$2"
     scriptExec=$(getScriptExec "$script")
 
-    local cachePath cachedExitCodePath cachedStdoutPath cachedStderrPath
-    cachePath="${execCacheDir}/$(getFileHash "$contentPath")/$(getItemHash "$script")"
-    cachedExitCodePath="${cachePath}/exit"
-    cachedStdoutPath="${cachePath}/1"
-    cachedStderrPath="${cachePath}/2"
-    
-    debug "trying ${script} (exec: ${scriptExec})";
-
-    # If we have never run this before, do so and cache the results
-    if [[ ! -s "${cachedExitCodePath}" ]]; then
-        # we have never run this before
-        debug "running ${scriptExec} on ${contentPath}";
-
-        mkdir -p "${cachePath}"
-
-        local tempStdoutPath tempStderrPath
-        tempStdoutPath=$(mktemp -q "/tmp/permaweb.XXXXX" || exit 1)
-        trap 'rm -f -- "$tempStdoutPath"' EXIT
-        tempStderrPath=$(mktemp -q "/tmp/permaweb.XXXXX" || exit 1)
-        trap 'rm -f -- "$tempStderrPath"' EXIT
-
-        debug "writing 1 > ${tempStdoutPath}  2 > ${tempStderrPath}";
-
-        # execute script
-        local exitCode
-        debug "${scriptExec} < ${contentPath} > ${tempStdoutPath} 2>${tempStderrPath}"
-        "${scriptExec}" < "${contentPath}" > "${tempStdoutPath}" 2>"${tempStderrPath}"
-        exitCode=$?
-
-        if [[ -n "$validator" ]]; then
-            debug "running validator ${validator}";
-            "${validator}" < "${tempStdoutPath}" 1>&2 2>>"${tempStderrPath}"
-            exitCode=$?
-        fi
-
-        echo "${exitCode}" > "${cachedExitCodePath}"
-        cache "${tempStdoutPath}" "${cachedStdoutPath}";
-        cache "${tempStderrPath}" "${cachedStderrPath}";
-    fi
-
-    # Now we definitely have some output in the cache, even if it failed
-    cachedExitCode=$(<"${cachedExitCodePath}");
-    if [[ "${cachedExitCode}" -eq 0 ]]; then
-        if [[ -e "${cachedStdoutPath}" ]]; then
-            echo "$(dirname "${cachedStdoutPath}")/$(readlink "${cachedStdoutPath}")"
-        fi
-    fi
-    if [[ -e $cachedStderrPath ]]; then
-        cat "${cachedStderrPath}" >&2
-    fi
-    return "${cachedExitCode}"
+    executeCached "$scriptExec" "$contentPath" "$validator"
 }
 
-# Get the validator for this extension, if there is one
-validatorsDir="$scriptsDir/validators"
-if [[ -d "$validatorsDir" ]]; then
-    validatorPath="${validatorsDir}/${extension}"
-    if [[ -f "$validatorPath" && -x "$validatorPath" ]]; then
-        validator="$validatorPath"
-    fi
-fi
+
+# Because this script transforms input files into the same kind of file, 
+# there is a common validator for every script run in the pipeline.
+validator=$(getValidator "$extension" "$scriptsDir")
 
 # Build the array of scripts
 scripts=();
