@@ -82,5 +82,4 @@ assert "header was updated with new unique ID" "$grep_result2 == 1"
 # Cleanup
 rm -f "$outputPath" "$outputPath2"
 
-warn "All tests passed!"
 exit 0
