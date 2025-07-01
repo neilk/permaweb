@@ -25,7 +25,7 @@ outputPath1=$(mktemp -q "/tmp/permaweb.XXXXX" || exit 1)
 PERMAWEB_SCRIPT_RECORD=$(mktemp -q "/tmp/permaweb.XXXX" || exit 1)
 export PERMAWEB_SCRIPT_RECORD
 cacheDir=$(mktemp -d "/tmp/permaweb.XXXXX" || exit 1)
-"../../permaweb" -c "$cacheDir" -s "./scripts_1" "$inputPath" > "$outputPath1"
+"../../single.sh" -c "$cacheDir" -s "./scripts_1" "$inputPath" > "$outputPath1"
 
 # The contents of PERMAWEB_SCRIPT_RECORD should be as follows. 
 # The first "html" is the initial validation.
@@ -63,7 +63,7 @@ assert "first execution: all scripts and validations ran" "$scriptRecordMatch ==
 PERMAWEB_SCRIPT_RECORD=$(mktemp -q "/tmp/permaweb.XXXX" || exit 1)
 export PERMAWEB_SCRIPT_RECORD
 outputPath2=$(mktemp -q "/tmp/permaweb.XXXXX" || exit 1)
-"../../permaweb" -c "$cacheDir" -s "./scripts_2" "$inputPath" > "$outputPath2"
+"../../single.sh" -c "$cacheDir" -s "./scripts_2" "$inputPath" > "$outputPath2"
 
 # This is what we expect to run:
 # addStyle runs, because its script content is different now.

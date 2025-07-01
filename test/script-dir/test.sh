@@ -44,7 +44,7 @@ EOF
 # First run with initial header
 unique_id1=$(create_unique_header)
 outputPath=$(mktemp -q "/tmp/permaweb.XXXXX" || exit 1)
-../../permaweb -c "$cacheDir" -s "./scripts" "$inputPath" > "$outputPath"
+../../single.sh -c "$cacheDir" -s "./scripts" "$inputPath" > "$outputPath"
 
 expectedScriptRecord=$(cat << 'EOF'
 scripts/html/10_addHeader/main.sh
@@ -73,7 +73,7 @@ assert "unique IDs are different" "\"$unique_id1\" != \"$unique_id2\""
 
 # Run again - should use new header
 outputPath2=$(mktemp -q "/tmp/permaweb.XXXXX" || exit 1)
-../../permaweb -c "$cacheDir" -s "./scripts" "$inputPath" > "$outputPath2"
+../../single.sh -c "$cacheDir" -s "./scripts" "$inputPath" > "$outputPath2"
 
 # Verify the header was updated (cache was invalidated)
 grep_result2=$(grep -c "$unique_id2" "$outputPath2")

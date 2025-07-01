@@ -96,8 +96,9 @@ file_targets: $(HTML_TARGETS) $(IMAGE_TARGETS) $(FONT_TARGETS) $(SVG_TARGETS) $(
 all: file_targets
 
 # Define a rule to process each HTML file
-# This is conceptually very simple; we invoke permaweb on the origin file and write to a target file. 
 # 
+# single.sh runs a pipeline of scripts a single file, which produces an identically named output file.
+#
 # We do it in a bit more complicated way here to support "live" editing.
 #
 # We write to a temporary final target because if we begin writing to the actual target, it will temporarily 
@@ -114,7 +115,7 @@ all: file_targets
 $(BUILD_DIR)/%.html: $(SOURCE_DIR)/%.html
 	@mkdir -p $(dir $@)
 
-	$(MKFILE_DIR)/permaweb.sh -d $< > $(TMP_FINAL_TARGET)
+	$(MKFILE_DIR)/single.sh -d $< > $(TMP_FINAL_TARGET)
 	
 	$(shell touch -t $(MAKE_START_TIME) $(TMP_FINAL_TARGET))
 	
