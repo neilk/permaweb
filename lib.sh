@@ -1,10 +1,10 @@
 #!/bin/bash
 
-DEBUG=false
+DEBUG=${DEBUG:+1}  # default false
 cacheDirDefault=".cache"
 
 setDebug() {
-    DEBUG=$1
+    DEBUG=0   # true
 }
 
 warn() {
@@ -12,7 +12,7 @@ warn() {
 }
 
 debug() {
-    if "${DEBUG}"; then
+    if [[ "${DEBUG}" ]]; then
         warn "$@"
     fi
 }
@@ -67,16 +67,16 @@ getValidator() {
 }
 
 executeCached() {
-    local scriptExec="$1"       
-    local contentPath="$2"
-    local validator="$3"
+    local itemHash="$1"
+    local scriptExec="$2"       
+    local contentPath="$3"
+    local validator="$4"
 
     fileHash=$(getFileHash "$contentPath")
-    scriptHash=$(getFileHash "$scriptExec")
 
     # The cache path is a directory containing the exit code, stdout, and stderr.
     local cachePath cachedExitCodePath cachedStdoutPath cachedStderrPath
-    cachePath="${execCacheDir}/${fileHash}/${scriptHash}"
+    cachePath="${execCacheDir}/${fileHash}/${itemHash}"
     cachedExitCodePath="${cachePath}/exit"
     cachedStdoutPath="${cachePath}/1"
     cachedStderrPath="${cachePath}/2"

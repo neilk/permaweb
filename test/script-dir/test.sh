@@ -1,4 +1,8 @@
 #!/bin/bash
+
+# This test demonstrates that the cache is invalidated when 
+# the script directory content changes.
+
 set -E
 
 testDir=$(dirname -- "$( readlink -f -- "$0"; )");
@@ -75,7 +79,8 @@ assert "unique IDs are different" "\"$unique_id1\" != \"$unique_id2\""
 outputPath2=$(mktemp -q "/tmp/permaweb.XXXXX" || exit 1)
 ../../single.sh -c "$cacheDir" -s "./scripts" "$inputPath" > "$outputPath2"
 
-# Verify the header was updated (cache was invalidated)
+# Since the header is part of the script directory content, the cache path should have 
+# been different, and therefore the cache should have been invalidated
 grep_result2=$(grep -c "$unique_id2" "$outputPath2")
 assert "header was updated with new unique ID" "$grep_result2 == 1"
 

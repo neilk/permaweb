@@ -18,7 +18,7 @@ scriptsDir="scripts"
 while getopts "ds:c:" opt; do
     case "${opt}" in
         d)
-            setDebug true
+            setDebug
             ;;
         s)
             scriptsDir="${OPTARG}"
@@ -116,7 +116,14 @@ getCachedValidatedResultPath() {
     script="$2"
     scriptExec=$(getScriptExec "$script")
 
-    executeCached "$scriptExec" "$contentPath" "$validator"
+    # itemHash is the hash of everything that is part of processing:
+    #  the hash of the script file and any ancillary files it uses 
+    # TODO: push the determination of the "itemHash" downwards somehow. 
+    # We can't right now because map-reduce has different directory conventions. Perhaps 
+    # we can instead push the list of files downwards.
+    itemHash=$(getItemHash "$script")
+
+    executeCached "$itemHash" "$scriptExec" "$contentPath" "$validator"
 }
 
 
