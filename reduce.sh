@@ -7,16 +7,14 @@
 set -e
 
 # defaults
-DEBUG=false
 reducersDir="reducers"
-cacheDir=".cache"
 outputDir="build"
 
 # parse options
 while getopts "ds:c:o:" opt; do
     case "${opt}" in
         d)
-            DEBUG=true
+            setDebug;
             ;;
         s)
             reducersDir="${OPTARG}"
@@ -48,12 +46,7 @@ fi
 
 debug "reducersDir: $reducersDir  cacheDir: $cacheDir  outputDir: $outputDir"
 
-# create directories
-execCacheDir="${cacheDir}/exec"
-objectCacheDir="${cacheDir}/object"
-mkdir -p "${cacheDir}"
-mkdir -p "${execCacheDir}"
-mkdir -p "${objectCacheDir}"
+setupCache "$cacheDir";
 
 # parse positional arguments after options
 shift $((OPTIND-1))
@@ -117,6 +110,7 @@ get_script_entry() {
 
 
 # Process a single file with the map script and return the map result path
+# TODO - replace as much as possible with executeCached()
 process_file_with_map() {
     local file="$1"
     local mapScript="$2"
@@ -163,17 +157,11 @@ process_file_with_map() {
         "${scriptExec}" < "$file" > "${tempStdoutPath}" 2>"${tempStderrPath}"
         local exitCode=$?
         
-        # Check for validator
-        local validator=""
-        validatorsDir="$reducersDir/validators"
-        if [[ -d "$validatorsDir" ]]; then
-            validatorPath="${validatorsDir}/${extension}"
-            if [[ -f "$validatorPath" && -x "$validatorPath" ]]; then
-                validator="$validatorPath"
-                debug "Running validator ${validator}"
-                "${validator}" < "${tempStdoutPath}" 1>&2 2>>"${tempStderrPath}"
-                exitCode=$?
-            fi
+        # Validate 
+        if [[ -n "$validator" ]]; then
+            debug "running validator ${validator}";
+            "${validator}" < "${tempStdoutPath}" 1>&2 2>>"${tempStderrPath}"
+            exitCode=$?
         fi
         
         echo "${exitCode}" > "${cachedExitCodePath}"
@@ -181,23 +169,22 @@ process_file_with_map() {
         cache "${tempStderrPath}" "${cachedStderrPath}"
     fi
     
-    # Return the cached result path if successful
+    # Now we definitely have some output in the cache, even if it failed
     local cachedExitCode
-    cachedExitCode=$(<"${cachedExitCodePath}")
-    
+    cachedExitCode=$(<"${cachedExitCodePath}");
+    if [[ "${cachedExitCode}" -eq 0 ]]; then
+        if [[ -e "${cachedStdoutPath}" ]]; then
+            echo "$(dirname "${cachedStdoutPath}")/$(readlink "${cachedStdoutPath}")"
+        fi
+    fi
     if [[ -e "${cachedStderrPath}" ]]; then
-        cat "${cachedStderrPath}" >&2
+       cat "${cachedStderrPath}" >&2
     fi
-    
-    if [[ "${cachedExitCode}" -eq 0 && -e "${cachedStdoutPath}" ]]; then
-        echo "$(dirname "${cachedStdoutPath}")/$(readlink "${cachedStdoutPath}")"
-        return 0
-    else
-        return "${cachedExitCode}"
-    fi
+    return "${cachedExitCode}"
 }
 
 # Process all collected map results with the reduce script
+# TODO - replace as much as possible with executeCached()
 process_with_reduce() {
     local mapResults="$1"
     local reduceScript="$2"
