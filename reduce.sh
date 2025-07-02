@@ -143,8 +143,9 @@ process_with_reduce() {
     local reduceScript="$2"
     local extension="$3"
     
-    # Create a hash of all inputs (file paths and their modification times)
-    local inputsHash tempInputsList
+    # Create a temporary file listing all map results for environment variable.
+    # This captures their content since they will be in the content-addressable cache.
+    local tempInputsList
     tempInputsList=$(mktemp -q "/tmp/permaweb.XXXXX" || exit 1)
     trap 'rm -f -- "$tempInputsList"' EXIT
     
@@ -152,10 +153,12 @@ process_with_reduce() {
         echo "$result" >> "$tempInputsList"
     done
     
+    # Create hash of all inputs combined with script hash
+    local inputsHash scriptHash combinedHash
     inputsHash=$(getFileHash "$tempInputsList")
     
     # Handle directory-based scripts
-    local scriptHash scriptExec
+    local scriptExec
     if [[ -d "$reduceScript" ]]; then
         scriptHash=$(getDirHash "$reduceScript")
         scriptExec=$(get_script_entry "$reduceScript")
@@ -164,77 +167,36 @@ process_with_reduce() {
         scriptExec="$reduceScript"
     fi
     
-    # Cache path for this reduce operation
-    local cachePath="${cacheDir}/${inputsHash}/${scriptHash}"
-    local cachedExitCodePath="${cachePath}/exit"
-    local cachedStdoutPath="${cachePath}/1"
-    local cachedStderrPath="${cachePath}/2"
+    # Hash the results as a combination of the inputs and the script 
+    combinedHash=$(echo "${inputsHash}${scriptHash}" | sha1sum | cut -d' ' -f1)
+    
+    # Create a temporary file with all map results combined for the reduce script to read
+    local tempMapResultsFile
+    tempMapResultsFile=$(mktemp -q "/tmp/permaweb.XXXXX" || exit 1)
+    trap 'rm -f -- "$tempMapResultsFile"' EXIT
+    
+    for result in $mapResults; do
+        cat "$result" >> "$tempMapResultsFile"
+    done
     
     debug "Processing $(wc -l < "$tempInputsList") map results with reduce script $reduceScript"
     
-    # If not already cached, run the reduce script
-    if [[ ! -s "${cachedExitCodePath}" ]]; then
-        debug "Running reduce script $scriptExec"
-        
-        mkdir -p "${cachePath}"
-        
-        local tempStdoutPath tempStderrPath
-        tempStdoutPath=$(mktemp -q "/tmp/permaweb.XXXXX" || exit 1)
-        trap 'rm -f -- "$tempStdoutPath"' EXIT
-        tempStderrPath=$(mktemp -q "/tmp/permaweb.XXXXX" || exit 1)
-        trap 'rm -f -- "$tempStderrPath"' EXIT
-        
-        # Create a temporary file with all map results for the reduce script to read
-        local tempMapResultsFile
-        tempMapResultsFile=$(mktemp -q "/tmp/permaweb.XXXXX" || exit 1)
-        trap 'rm -f -- "$tempMapResultsFile"' EXIT
-        
-        for result in $mapResults; do
-            cat "$result" >> "$tempMapResultsFile"
-        done
-        
-        # Export variables
-        export PERMAWEB_SOURCE_DIR="$sourceDir"
-        export PERMAWEB_MAP_RESULTS="$tempInputsList"
-        
-        # Execute the reduce script
-        "${scriptExec}" < "$tempMapResultsFile" > "${tempStdoutPath}" 2>"${tempStderrPath}"
-        local exitCode=$?
-        
-        # Check for validator
-        local validator=""
-        validatorsDir="$reducersDir/validators"
-        if [[ -d "$validatorsDir" ]]; then
-            validatorPath="${validatorsDir}/${extension}"
-            if [[ -f "$validatorPath" && -x "$validatorPath" ]]; then
-                validator="$validatorPath"
-                debug "Running validator ${validator}"
-                "${validator}" < "${tempStdoutPath}" 1>&2 2>>"${tempStderrPath}"
-                exitCode=$?
-            fi
+    # Check for validator
+    local validator=""
+    validatorsDir="$reducersDir/validators"
+    if [[ -d "$validatorsDir" ]]; then
+        validatorPath="${validatorsDir}/${extension}"
+        if [[ -f "$validatorPath" && -x "$validatorPath" ]]; then
+            validator="$validatorPath"
         fi
-        
-        echo "${exitCode}" > "${cachedExitCodePath}"
-        cache "${tempStdoutPath}" "${cachedStdoutPath}"
-        cache "${tempStderrPath}" "${cachedStderrPath}"
-        
-        rm -f "$tempMapResultsFile"
     fi
     
-    # Return the cached result path if successful
-    local cachedExitCode
-    cachedExitCode=$(<"${cachedExitCodePath}")
+    # Export variables for the reduce script
+    export PERMAWEB_SOURCE_DIR="$sourceDir"
+    export PERMAWEB_MAP_RESULTS="$tempInputsList"
     
-    if [[ -e "${cachedStderrPath}" ]]; then
-        cat "${cachedStderrPath}" >&2
-    fi
-    
-    if [[ "${cachedExitCode}" -eq 0 && -e "${cachedStdoutPath}" ]]; then
-        echo "$(dirname "${cachedStdoutPath}")/$(readlink "${cachedStdoutPath}")"
-        return 0
-    else
-        return "${cachedExitCode}"
-    fi
+    # Use executeCached for the caching functionality
+    executeCached "$combinedHash" "$scriptExec" "$tempMapResultsFile" "$validator"
 }
 
 
