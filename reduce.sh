@@ -116,8 +116,7 @@ process_file_with_map() {
     local mapScript="$2"
     local extension="$3"
     
-    local fileHash scriptHash cachePath
-    fileHash=$(getFileHash "$file")
+    local scriptHash scriptExec
     
     # Handle directory-based scripts
     if [[ -d "$mapScript" ]]; then
@@ -128,59 +127,13 @@ process_file_with_map() {
         scriptExec="$mapScript"
     fi
     
-    # Cache path for this file+map combination
-    cachePath="${cacheDir}/${fileHash}/${scriptHash}"
-    cachedExitCodePath="${cachePath}/exit"
-    cachedStdoutPath="${cachePath}/1"
-    cachedStderrPath="${cachePath}/2"
-    
     debug "Processing $file with map script $mapScript"
     
-    # If not already cached, run the map script
-    if [[ ! -s "${cachedExitCodePath}" ]]; then
-        debug "Running map script $scriptExec on $file"
-        
-        mkdir -p "${cachePath}"
-        
-        local tempStdoutPath tempStderrPath
-        tempStdoutPath=$(mktemp -q "/tmp/permaweb.XXXXX" || exit 1)
-        trap 'rm -f -- "$tempStdoutPath"' EXIT
-        tempStderrPath=$(mktemp -q "/tmp/permaweb.XXXXX" || exit 1)
-        trap 'rm -f -- "$tempStderrPath"' EXIT
-        
-        # Set environment variable with original file path for script use
-        export PERMAWEB_SOURCE_PATH="$file"
-        
-        # Execute the map script
-        debug "${scriptExec} exists? $(command -v "${scriptExec}")"
-        debug "Running ${scriptExec} < $file > ${tempStdoutPath} 2>${tempStderrPath}"
-        "${scriptExec}" < "$file" > "${tempStdoutPath}" 2>"${tempStderrPath}"
-        local exitCode=$?
-        
-        # Validate 
-        if [[ -n "$validator" ]]; then
-            debug "running validator ${validator}";
-            "${validator}" < "${tempStdoutPath}" 1>&2 2>>"${tempStderrPath}"
-            exitCode=$?
-        fi
-        
-        echo "${exitCode}" > "${cachedExitCodePath}"
-        cache "${tempStdoutPath}" "${cachedStdoutPath}"
-        cache "${tempStderrPath}" "${cachedStderrPath}"
-    fi
+    # Set environment variable with original file path for script use
+    export PERMAWEB_SOURCE_PATH="$file"
     
-    # Now we definitely have some output in the cache, even if it failed
-    local cachedExitCode
-    cachedExitCode=$(<"${cachedExitCodePath}");
-    if [[ "${cachedExitCode}" -eq 0 ]]; then
-        if [[ -e "${cachedStdoutPath}" ]]; then
-            echo "$(dirname "${cachedStdoutPath}")/$(readlink "${cachedStdoutPath}")"
-        fi
-    fi
-    if [[ -e "${cachedStderrPath}" ]]; then
-       cat "${cachedStderrPath}" >&2
-    fi
-    return "${cachedExitCode}"
+    # Use executeCached for the caching functionality
+    executeCached "$scriptHash" "$scriptExec" "$file" "$validator"
 }
 
 # Process all collected map results with the reduce script
