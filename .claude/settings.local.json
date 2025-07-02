@@ -1,8 +1,10 @@
 {
-  "enableAllProjectMcpServers": false,
   "permissions": {
     "allow": [
-      "Bash(make test:*)"
+      "Bash(make test:*)",
+      "Bash(mkdir:*)",
+      "Bash(chmod:*)"
     ]
-  }
+  },
+  "enableAllProjectMcpServers": false
 }
