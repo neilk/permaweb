@@ -1,4 +1,8 @@
 #!/bin/bash
+
+# This test demonstrates that the cache is invalidated when 
+# the script directory content changes.
+
 set -E
 
 testDir=$(dirname -- "$( readlink -f -- "$0"; )");
@@ -6,9 +10,6 @@ cd "$testDir" || exit
 
 source "$(dirname "$testDir")/lib.sh"
 trap 'handle_error $LINENO' ERR
-
-
-warn "$0"
 
 # Test for directory-based scripts with dependent files
 
@@ -47,7 +48,7 @@ EOF
 # First run with initial header
 unique_id1=$(create_unique_header)
 outputPath=$(mktemp -q "/tmp/permaweb.XXXXX" || exit 1)
-../../permaweb -c "$cacheDir" -s "./scripts" "$inputPath" > "$outputPath"
+../../single.sh -c "$cacheDir" -s "./scripts" "$inputPath" > "$outputPath"
 
 expectedScriptRecord=$(cat << 'EOF'
 scripts/html/10_addHeader/main.sh
@@ -76,14 +77,14 @@ assert "unique IDs are different" "\"$unique_id1\" != \"$unique_id2\""
 
 # Run again - should use new header
 outputPath2=$(mktemp -q "/tmp/permaweb.XXXXX" || exit 1)
-../../permaweb -c "$cacheDir" -s "./scripts" "$inputPath" > "$outputPath2"
+../../single.sh -c "$cacheDir" -s "./scripts" "$inputPath" > "$outputPath2"
 
-# Verify the header was updated (cache was invalidated)
+# Since the header is part of the script directory content, the cache path should have 
+# been different, and therefore the cache should have been invalidated
 grep_result2=$(grep -c "$unique_id2" "$outputPath2")
 assert "header was updated with new unique ID" "$grep_result2 == 1"
 
 # Cleanup
 rm -f "$outputPath" "$outputPath2"
 
-warn "All tests passed!"
 exit 0

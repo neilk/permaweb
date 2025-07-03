@@ -12,7 +12,7 @@ inputPath=source/index.html
 outputPath=$(mktemp -q "/tmp/permaweb.XXXXX" || exit 1)
 cacheDir=$(mktemp -d "/tmp/permaweb.XXXXX" || exit 1)
 export PERMAWEB_FAILING_SCRIPT_SEMAPHORE=$(mktemp -q /tmp/permaweb.XXXXX || exit 1)
-"../../permaweb" -c "$cacheDir" -s "./scripts" "$inputPath" > "$outputPath"
+"../../single.sh" -c "$cacheDir" -s "./scripts" "$inputPath" > "$outputPath"
 
 # Common assertions
 assert_cache_ok "$cacheDir"

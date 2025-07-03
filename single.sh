@@ -1,4 +1,5 @@
 #!/bin/bash
+. "$(dirname "$0")/lib.sh"
 # set -E
 #
 #handle_error() {
@@ -10,27 +11,14 @@
 #trap 'handle_error $LINENO' ERR
 
 
-warn() {
-    echo "$@" >&2;
-}
-
-debug() {
-    if "${DEBUG}"; then
-        warn "$@"
-    fi
-}
-
-
 # defaults
-DEBUG=false
 scriptsDir="scripts"
-cacheDir=".cache"
 
 # parse options
 while getopts "ds:c:" opt; do
     case "${opt}" in
         d)
-            DEBUG=true
+            setDebug
             ;;
         s)
             scriptsDir="${OPTARG}"
@@ -55,15 +43,7 @@ fi
 
 debug "scriptsDir: $scriptsDir  cacheDir $cacheDir"
 
-
-
-# create directories
-# (This should be set up in the makefile, we shouldn't have to check this every invocation?)
-execCacheDir="${cacheDir}/exec";  # results of scripts on inputs
-objectCacheDir="${cacheDir}/object";  # content-addressable objects
-mkdir -p "${cacheDir}"         
-mkdir -p "${execCacheDir}"    
-mkdir -p "${objectCacheDir}"
+setupCache "$cacheDir";
 
 # parse positional arguments after options
 shift $((OPTIND-1))
@@ -80,12 +60,6 @@ if [[ ! -f "$filename" ]]; then
     warn "File $filename does not exist";
     exit 1;
 fi
-
-# Add this function to compute a composite hash for a directory
-getDirHash() {
-    local dir="$1"
-    find "$dir" -type f -print0 | sort -z | xargs -0 sha1sum | sha1sum | cut -d' ' -f1
-}
 
 # Find the executable entry point in a script directory
 # Convention: use 'main' or 'main.*' as the entry point
@@ -116,12 +90,6 @@ getScriptExec() {
     fi
 }
 
-# given a file, get the hash
-getFileHash() {
-    sha1sum "$1" | cut -d' ' -f1
-}
-
-# Get hash for a script item (file or directory)
 getItemHash() {
     local item="$1"
     if isScriptDir "$item"; then
@@ -130,23 +98,6 @@ getItemHash() {
         getFileHash "$item"
     fi
 }
-
-# Makes an entry in the content-addressed cache
-# This is actually just a link to the object cache, which contains all unique content. There may be
-# many entries in the content cache that point to the same object.
-cache() {
-    local sourcePath linkPath objectPath
-    sourcePath=$1
-    linkPath=$2
-    objectPath="${objectCacheDir}/$(getFileHash "${sourcePath}")";
-    if [[ ! -f "${objectPath}" ]]; then
-        mv "${sourcePath}" "${objectPath}"
-    fi
-    local relativeObjectPath
-    relativeObjectPath=$(realpath -s --relative-to="$(dirname "${linkPath}")" "${objectPath}")
-    ln -s "${relativeObjectPath}" "${linkPath}"
-}
-
 
 # Given an input path and a script, obtain the complete results - stdout, stderr, exit code -
 # as if we ran that script and validation on exactly that input. This may be obtained
@@ -165,67 +116,20 @@ getCachedValidatedResultPath() {
     script="$2"
     scriptExec=$(getScriptExec "$script")
 
-    local cachePath cachedExitCodePath cachedStdoutPath cachedStderrPath
-    cachePath="${execCacheDir}/$(getFileHash "$contentPath")/$(getItemHash "$script")"
-    cachedExitCodePath="${cachePath}/exit"
-    cachedStdoutPath="${cachePath}/1"
-    cachedStderrPath="${cachePath}/2"
-    
-    debug "trying ${script} (exec: ${scriptExec})";
+    # itemHash is the hash of everything that is part of processing:
+    #  the hash of the script file and any ancillary files it uses 
+    # TODO: push the determination of the "itemHash" downwards somehow. 
+    # We can't right now because map-reduce has different directory conventions. Perhaps 
+    # we can instead push the list of files downwards.
+    itemHash=$(getItemHash "$script")
 
-    # If we have never run this before, do so and cache the results
-    if [[ ! -s "${cachedExitCodePath}" ]]; then
-        # we have never run this before
-        debug "running ${scriptExec} on ${contentPath}";
-
-        mkdir -p "${cachePath}"
-
-        local tempStdoutPath tempStderrPath
-        tempStdoutPath=$(mktemp -q "/tmp/permaweb.XXXXX" || exit 1)
-        trap 'rm -f -- "$tempStdoutPath"' EXIT
-        tempStderrPath=$(mktemp -q "/tmp/permaweb.XXXXX" || exit 1)
-        trap 'rm -f -- "$tempStderrPath"' EXIT
-
-        debug "writing 1 > ${tempStdoutPath}  2 > ${tempStderrPath}";
-
-        # execute script
-        local exitCode
-        debug "${scriptExec} < ${contentPath} > ${tempStdoutPath} 2>${tempStderrPath}"
-        "${scriptExec}" < "${contentPath}" > "${tempStdoutPath}" 2>"${tempStderrPath}"
-        exitCode=$?
-
-        if [[ -n "$validator" ]]; then
-            debug "running validator ${validator}";
-            "${validator}" < "${tempStdoutPath}" 1>&2 2>>"${tempStderrPath}"
-            exitCode=$?
-        fi
-
-        echo "${exitCode}" > "${cachedExitCodePath}"
-        cache "${tempStdoutPath}" "${cachedStdoutPath}";
-        cache "${tempStderrPath}" "${cachedStderrPath}";
-    fi
-
-    # Now we definitely have some output in the cache, even if it failed
-    cachedExitCode=$(<"${cachedExitCodePath}");
-    if [[ "${cachedExitCode}" -eq 0 ]]; then
-        if [[ -e "${cachedStdoutPath}" ]]; then
-            echo "$(dirname "${cachedStdoutPath}")/$(readlink "${cachedStdoutPath}")"
-        fi
-    fi
-    if [[ -e $cachedStderrPath ]]; then
-        cat "${cachedStderrPath}" >&2
-    fi
-    return "${cachedExitCode}"
+    executeCached "$itemHash" "$scriptExec" "$contentPath" "$validator"
 }
 
-# Get the validator for this extension, if there is one
-validatorsDir="$scriptsDir/validators"
-if [[ -d "$validatorsDir" ]]; then
-    validatorPath="${validatorsDir}/${extension}"
-    if [[ -f "$validatorPath" && -x "$validatorPath" ]]; then
-        validator="$validatorPath"
-    fi
-fi
+
+# Because this script transforms input files into the same kind of file, 
+# there is a common validator for every script run in the pipeline.
+validator=$(getValidator "$extension" "$scriptsDir")
 
 # Build the array of scripts
 scripts=();

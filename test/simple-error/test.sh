@@ -23,7 +23,7 @@ PERMAWEB_TEST_ERROR_NUMBER=$(shuf -i 1-10000 -n 1)
 ORIGINAL_PERMAWEB_TEST_ERROR_NUMBER=$PERMAWEB_TEST_ERROR_NUMBER
 export PERMAWEB_TEST_ERROR_NUMBER
 
-"../../permaweb" -c "$cacheDir" -s "./scripts" "$inputPath" > "$outputPath" 2> "$errorPath"
+"../../single.sh" -c "$cacheDir" -s "./scripts" "$inputPath" > "$outputPath" 2> "$errorPath"
 
 # Common assertions
 assert_cache_ok "$cacheDir"
@@ -48,7 +48,7 @@ PERMAWEB_TEST_ERROR_NUMBER=$(shuf -i 1-10000 -n 1)
 export PERMAWEB_TEST_ERROR_NUMBER
 assert "error number has changed for re-run" "[$PERMAWEB_TEST_ERROR_NUMBER != $ORIGINAL_PERMAWEB_TEST_ERROR_NUMBER]"
 
-"../../permaweb" -c "$cacheDir" -s "./scripts" "$inputPath" > "$outputPath" 2> "$errorPath"
+"../../single.sh" -c "$cacheDir" -s "./scripts" "$inputPath" > "$outputPath" 2> "$errorPath"
 errorInStderrCount2=$(grep -c "${ORIGINAL_PERMAWEB_TEST_ERROR_NUMBER}" "$errorPath")
 assert "even after re-run, original error was shown in stderr" "$errorInStderrCount2 == 1"
 
