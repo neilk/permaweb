@@ -48,6 +48,7 @@ cache() {
     objectPath="${objectCacheDir}/$(getFileHash "${sourcePath}")";
     if [[ ! -f "${objectPath}" ]]; then
         mv "${sourcePath}" "${objectPath}"
+        debug "cached object ${objectPath} from ${sourcePath}"
     fi
     local relativeObjectPath
     relativeObjectPath=$(realpath -s --relative-to="$(dirname "${linkPath}")" "${objectPath}")
@@ -56,14 +57,18 @@ cache() {
 
 # Get the validator for this extension, if there is one
 getValidator() {
-    local extension="$1"
-    local validatorsDir="$2/validators"
+    local extension
+    extension="$1"
+    local validatorsDir
+    validatorsDir="$2/validators"
+    local validator 
     if [[ -d "$validatorsDir" ]]; then
         validatorPath="${validatorsDir}/${extension}"
         if [[ -f "$validatorPath" && -x "$validatorPath" ]]; then
             validator="$validatorPath"
         fi
     fi
+    echo "$validator"
 }
 
 executeCached() {
@@ -71,6 +76,8 @@ executeCached() {
     local scriptExec="$2"       
     local contentPath="$3"
     local validator="$4"
+
+    debug "executeCached: itemHash=${itemHash}, scriptExec=${scriptExec}, contentPath=${contentPath}, validator=${validator}"
 
     fileHash=$(getFileHash "$contentPath")
 

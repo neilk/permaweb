@@ -144,7 +144,6 @@ process_with_reduce() {
     local extension="$3"
     
     # Create a temporary file listing all map results for environment variable.
-    # This captures their content since they will be in the content-addressable cache.
     local tempInputsList
     tempInputsList=$(mktemp -q "/tmp/permaweb.XXXXX" || exit 1)
     trap 'rm -f -- "$tempInputsList"' EXIT
@@ -170,15 +169,6 @@ process_with_reduce() {
     # Hash the results as a combination of the inputs and the script 
     combinedHash=$(echo "${inputsHash}${scriptHash}" | sha1sum | cut -d' ' -f1)
     
-    # Create a temporary file with all map results combined for the reduce script to read
-    local tempMapResultsFile
-    tempMapResultsFile=$(mktemp -q "/tmp/permaweb.XXXXX" || exit 1)
-    trap 'rm -f -- "$tempMapResultsFile"' EXIT
-    
-    for result in $mapResults; do
-        cat "$result" >> "$tempMapResultsFile"
-    done
-    
     debug "Processing $(wc -l < "$tempInputsList") map results with reduce script $reduceScript"
     
     # Check for validator
@@ -196,7 +186,7 @@ process_with_reduce() {
     export PERMAWEB_MAP_RESULTS="$tempInputsList"
     
     # Use executeCached for the caching functionality
-    executeCached "$combinedHash" "$scriptExec" "$tempMapResultsFile" "$validator"
+    executeCached "$combinedHash" "$scriptExec" "$tempInputsList" "$validator"
 }
 
 
@@ -232,8 +222,10 @@ function getMapOrReduceScript() {
 # 4) Write the final result to the $outputDir/feeds/index.rss
 # 5) repeat the above with /sitemap.xml
 reduce() {
-    local reducerDir="$1"
-    local extension=$(basename "$1")
+    local reducerDir
+    reducerDir="$1"
+    local extension
+    extension=$(basename "$1")
     debug "Processing reducers for: $extension"
     # Perform a depth-first search through "${reducersDir}/${extension}"
     find "$reducerDir" -type d | while read -r dir; do

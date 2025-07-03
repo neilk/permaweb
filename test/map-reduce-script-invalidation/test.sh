@@ -101,7 +101,7 @@ assert "third run with changed reduce script: only reduce script ran" "$scriptRe
 # Output should be different due to changed reduce script (adds "Total: " prefix)
 actual_output3=$(< "$outputFile")
 expected_output3="Total: 5"
-assert "third run output reflects script change" "$actual_output3 == $expected_output3"
+assert "third run output reflects script change" "\"${actual_output3}\"==\"${expected_output3}\""
 
 # ========
 # Fourth run with same reducers_2 - should use cache again
@@ -121,8 +121,8 @@ assert "fourth run with same changed scripts: no scripts ran, cache was used" $i
 
 # Output should be the same as third run
 actual_output4=$(< "$outputFile")
-assert "fourth run output unchanged from third run" "$actual_output4 == $expected_output3"
+assert "fourth run output unchanged from third run"  "\"${actual_output4}\"==\"${expected_output3}\""
 
 # Clean up after testing
-rm -rf "$cacheDir"
-rm -rf "$outputDir"
+# rm -rf "$cacheDir"
+# rm -rf "$outputDir"

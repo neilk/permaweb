@@ -12,7 +12,7 @@ trap 'rm -f -- "$tempFile"' EXIT
 cat > "$tempFile"
 openAngleBracketCount=$(tr -cd '<' < "$tempFile" | wc -c)
 closeAngleBracketCount=$(tr -cd '>' < "$tempFile" | wc -c)
-if [[ $openAngleBracketCount == $closeAngleBracketCount ]]; then
+if [[ $openAngleBracketCount == "$closeAngleBracketCount" ]]; then
     exit 0;
 fi
 exit 1;

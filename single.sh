@@ -130,6 +130,7 @@ getCachedValidatedResultPath() {
 # Because this script transforms input files into the same kind of file, 
 # there is a common validator for every script run in the pipeline.
 validator=$(getValidator "$extension" "$scriptsDir")
+debug "(((( $extension $scriptsDir validator: $validator ))))";
 
 # Build the array of scripts
 scripts=();

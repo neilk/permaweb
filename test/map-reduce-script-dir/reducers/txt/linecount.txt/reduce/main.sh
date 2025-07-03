@@ -3,12 +3,12 @@
 # Takes line counts from map stage and sums them up
 
 # Record that we're running for test purposes
-basename "$0" >> "$PERMAWEB_SCRIPT_RECORD"
+realpath --relative-to="$PERMAWEB_SCRIPT_RECORD_BASE" "$(readlink -f "$0")" >> "$PERMAWEB_SCRIPT_RECORD"
 
 # Get the script's directory to locate the header.txt file
 SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 
 # Sum all the line counts from the input
-linecount=$(awk '{sum += $1} END {print sum}')
+linecount=$(xargs awk '{sum += $1} END {print sum}')
 
 sed "s/XXXX/${linecount}/" < "${SCRIPT_DIR}/header.txt"

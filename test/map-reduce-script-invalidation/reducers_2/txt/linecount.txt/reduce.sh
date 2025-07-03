@@ -6,4 +6,4 @@
 basename "$0" >> "$PERMAWEB_SCRIPT_RECORD"
 
 # Sum all the line counts from the input and add a prefix to show it's version 2
-awk '{sum += $1} END {print "Total: " sum}'
+xargs awk '{sum += $1} END {print "Total: " sum}'

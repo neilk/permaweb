@@ -24,7 +24,7 @@ assert() {
   message=$1
   assertion=$2
 
-  if [ ! "$assertion" ] 
+  if ! eval "[ $assertion ]" 
   then
     warn "𐄂 $message"
     exit $E_ASSERT_FAILED

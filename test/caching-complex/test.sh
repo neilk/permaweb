@@ -52,7 +52,7 @@ if diff <(echo "$expectedScriptRecord1") "$PERMAWEB_SCRIPT_RECORD" > /dev/null; 
     scriptRecordMatch1=true
 fi
 
-assert "first execution: all scripts and validations ran" "$scriptRecordMatch == true"
+assert "first execution: all scripts and validations ran" "$scriptRecordMatch1 == true"
 
 
 # ========

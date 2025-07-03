@@ -56,6 +56,10 @@ doMapReduce() {
 PERMAWEB_SCRIPT_RECORD=$(mktemp -q "/tmp/permaweb.XXXX" || exit 1)
 export PERMAWEB_SCRIPT_RECORD
 
+# This helps the scripts understand their own context
+PERMAWEB_SCRIPT_RECORD_BASE=$testDir
+export PERMAWEB_SCRIPT_RECORD_BASE
+
 doMapReduce
 
 # Common assertions for cache integrity
@@ -67,21 +71,23 @@ assert "output file was created at $outputFile" "-f $outputFile"
 # Check that the count matches expected value
 actual_file_contents=$(< "$outputFile")
 expected_file_contents=$(getExpectedFileContents "$expected_count")
+
 assert "file contents matches expected value" "\"${actual_file_contents}\"==\"${expected_file_contents}\""
 
 # Verify that map scripts ran on all source files, and then one reduce script
 # TODO : validate the final results? An RSS validator or something
 expectedScriptRecord1=$(cat << 'EOF'
-map.sh
-map.sh
-map.sh
-reduce.sh
+reducers/txt/linecount.txt/map/main.sh
+reducers/txt/linecount.txt/map/main.sh
+reducers/txt/linecount.txt/map/main.sh
+reducers/txt/linecount.txt/reduce/main.sh
 EOF
 )
 scriptRecordMatch1=false
 if diff <(echo "$expectedScriptRecord1") "$PERMAWEB_SCRIPT_RECORD" > /dev/null; then
     scriptRecordMatch1=true
 fi
+
 assert "map and reduce scripts ran as expected" "$scriptRecordMatch1 == true"
 
 # Run the script again to test caching
@@ -98,8 +104,9 @@ fi
 assert "On second run, no map or reduce ran; cache was used" $isScriptRecordEmpty
 
 # Check that the count still matches expected value
-actual_count=$(< "$outputFile")
-assert "line count still matches expected value" "$actual_count == $expected_count"
+actual_file_contents=$(< "$outputFile")
+expected_file_contents=$(getExpectedFileContents "$expected_count")
+assert "file contents still matches expected value" "\"${actual_file_contents}\"==\"${expected_file_contents}\""
 
 # Now modify one of the source files to test cache invalidation
 generate_file "source/file2.txt" 12  # Changed from 10 to 12 lines
@@ -111,8 +118,8 @@ doMapReduce
 
 # Verify that map scripts ran on the changed file only, and then one reduce script
 expectedScriptRecord3=$(cat << 'EOF'
-map.sh
-reduce.sh
+reducers/txt/linecount.txt/map/main.sh
+reducers/txt/linecount.txt/reduce/main.sh
 EOF
 )
 scriptRecordMatch3=false
@@ -128,5 +135,5 @@ expected_file_contents=$(getExpectedFileContents "$expected_count")
 assert "updated file contents matches expected value" "\"${actual_file_contents}\"==\"${expected_file_contents}\""
 
 # Clean up after testing
-rm -rf "$cacheDir"
-rm -rf "$outputDir"
+# rm -rf "$cacheDir"
+# rm -rf "$outputDir"

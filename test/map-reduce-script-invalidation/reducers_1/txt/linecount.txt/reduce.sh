@@ -6,4 +6,4 @@
 basename "$0" >> "$PERMAWEB_SCRIPT_RECORD"
 
 # Sum all the line counts from the input - just the sum
-awk '{sum += $1} END {print sum}'
+xargs awk '{sum += $1} END {print sum}'
