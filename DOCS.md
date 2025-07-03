@@ -476,6 +476,10 @@ Permaweb will execute `main.sh` and include all files in the cache hash.
 
 For features that aggregate data across multiple files (RSS feeds, sitemaps, tag clouds), use the map-reduce pattern.
 
+A `map` script will produce content for all, or some of the files which have a certain file extension. It will print, on standard out, 
+a record that can be parsed by a `reduce` script, which will combine all those into the output file. Note that unlike pipeline scripts, which must 
+emit something in the same format that they consume, the record format shared between `map` and `reduce` can be anything that both understand.
+
 ### Directory Structure
 
 ```
