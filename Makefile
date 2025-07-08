@@ -83,17 +83,13 @@ FAVICON_ICO_TARGET := $(BUILD_DIR)/favicon.ico
 mapreduce:
 	@echo "Map-reduce targets"
 
-	$(MKFILE_DIR)/reduce.sh
-
-	$(shell touch -t $(MAKE_START_TIME) $(TMP_FINAL_TARGET))
-
-	mv $(TMP_FINAL_TARGET) $@
+	$(MKFILE_DIR)/reduce.sh -d $< $(SOURCE_DIR)
 
 
 file_targets: $(HTML_TARGETS) $(IMAGE_TARGETS) $(FONT_TARGETS) $(SVG_TARGETS) $(PDF_TARGETS) $(FAVICON_TARGETS) $(FAVICON_ICO_TARGET) $(CSS_TARGETS) $(TXT_TARGETS) $(JS_TARGETS)
 
 # Default target
-all: file_targets
+all: file_targets mapreduce
 
 # Define a rule to process each HTML file
 # 
@@ -163,4 +159,4 @@ clean:
 	rm -rf $(BUILD_DIR)/*
 
 # Phony targets
-.PHONY: all clean test $(TESTS)
+.PHONY: all clean test mapreduce $(TESTS)

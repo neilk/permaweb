@@ -13,6 +13,7 @@
 
 # defaults
 scriptsDir="scripts"
+cacheDir=".cache"
 
 # parse options
 while getopts "ds:c:" opt; do

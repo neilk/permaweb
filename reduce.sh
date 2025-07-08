@@ -8,6 +8,7 @@ set -e
 
 # defaults
 reducersDir="reducers"
+cacheDir=".cache"
 outputDir="build"
 
 # parse options
@@ -44,15 +45,16 @@ if [[ ! $outputDir = /* ]]; then
     outputDir="$(pwd)/$outputDir"
 fi
 
-debug "reducersDir: $reducersDir  cacheDir: $cacheDir  outputDir: $outputDir"
-
-setupCache "$cacheDir";
-
 # parse positional arguments after options
 shift $((OPTIND-1))
 
 # check for source directory and target file
 sourceDir="$1"
+
+debug "sourceDir: $sourceDir reducersDir: $reducersDir  cacheDir: $cacheDir  outputDir: $outputDir"
+
+setupCache "$cacheDir";
+
 
 if [[ -z "${sourceDir}" ]]; then
     warn "No source directory provided"
@@ -64,16 +66,22 @@ if [[ ! -d "$sourceDir" ]]; then
     exit 1
 fi
 
+# Child scripts may need to know the source directory to analyze "sibling" files so export it
+export PERMAWEB_SOURCE_DIR="$sourceDir"
+
+
 if [[ -z "${outputDir}" ]]; then
     warn "No target directory provided"
     exit 1
 fi
 
 
+
 # Function to get a file's extension
 get_extension() {
     echo "${1##*.}"
 }
+
 
 # Function to find executables with specific prefixes in a directory
 find_executables() {
@@ -182,7 +190,6 @@ process_with_reduce() {
     fi
     
     # Export variables for the reduce script
-    export PERMAWEB_SOURCE_DIR="$sourceDir"
     export PERMAWEB_MAP_RESULTS="$tempInputsList"
     
     # Use executeCached for the caching functionality
@@ -228,6 +235,7 @@ reduce() {
     extension=$(basename "$1")
     debug "Processing reducers for: $extension"
     # Perform a depth-first search through "${reducersDir}/${extension}"
+
     find "$reducerDir" -type d | while read -r dir; do
         debug "Checking directory: $dir"
         # Check if the directory contains "map", "map.*", "reduce", or "reduce.*"
@@ -248,18 +256,19 @@ reduce() {
             mkdir -p "$(dirname "$targetPath")"
             
             # Process files in the source directory matching the extension
+            debug "Finding source files in $sourceDir with extension: <$extension>"
             source_files=$(find "$sourceDir" -type f -name "*.${extension}")
             successful_map_results=""
             
+            debug "Found source files: $source_files"
             for file in $source_files; do
                 if [[ -n "$mapScript" ]]; then
-                    mapResultPath=$(process_file_with_map "$file" "$mapScript" "$extension")
-                    mapExitCode=$?
-                    
-                    if [[ $mapExitCode -eq 0 ]]; then
+                    debug "Starting to process file: $file with map script: $mapScript"
+                    if mapResultPath=$(process_file_with_map "$file" "$mapScript" "$extension"); then
                         debug "Map successful for $file"
                         successful_map_results="${successful_map_results} ${mapResultPath}"
                     else
+                        mapExitCode=$?
                         debug "Map failed for $file with exit code $mapExitCode"
                     fi
                 fi
@@ -267,15 +276,13 @@ reduce() {
             
             if [[ -n "$reduceScript" && -n "$successful_map_results" ]]; then
                 # Process all collected map results with the reduce script
-                reduceResultPath=$(process_with_reduce "$successful_map_results" "$reduceScript" "$extension")
-                reduceExitCode=$?
-                
-                if [[ $reduceExitCode -eq 0 ]]; then
+                if reduceResultPath=$(process_with_reduce "$successful_map_results" "$reduceScript" "$extension"); then
                     debug "Reduce successful for $dir"
                     # Output the result to the target directory
                     cp "$reduceResultPath" "${targetPath}"
                     debug "Output written to ${targetPath}"
                 else
+                    reduceExitCode=$?
                     warn "Reduce failed for $dir with exit code $reduceExitCode"
                 fi
             fi
