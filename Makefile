@@ -154,7 +154,9 @@ test-lib-test:
 
 # Default target to run all tests
 test: $(TESTS) test-lib-test
-	@echo "\nAll tests executed." >&2
+	@echo "\n" >&2
+	@echo "==============================" >&2
+	@echo "All tests passed successfully." >&2
 
 # Pattern rule to run each test script
 $(TESTS):
