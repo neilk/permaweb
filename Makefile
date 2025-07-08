@@ -1,8 +1,5 @@
 MAKE_START_TIME := $(shell date "+%Y%m%d%H%M.%S")
 
-# If Make was invoked with debugging, pass along a debug flag to the scripts
-export DEBUG=$(if $(findstring d,$(MAKEFLAGS)),-d)
-
 # Define directories
 
 # Source files that have a more or less one-to-one relationship with the built files
@@ -84,7 +81,7 @@ FAVICON_ICO_TARGET := $(BUILD_DIR)/favicon.ico
 # This is going to rely significantly on caching if it's going to be fast.
 # This will fail if the build directory doesn't exist... because we don't know where it is, we're delegating that to reduce.sh
 mapreduce:
-	$(MKFILE_DIR)/reduce.sh $(SOURCE_DIR)
+	@$(MKFILE_DIR)/reduce.sh $(SOURCE_DIR)
 
 
 file_targets: $(HTML_TARGETS) $(IMAGE_TARGETS) $(FONT_TARGETS) $(SVG_TARGETS) $(PDF_TARGETS) $(FAVICON_TARGETS) $(FAVICON_ICO_TARGET) $(CSS_TARGETS) $(TXT_TARGETS) $(JS_TARGETS)
@@ -112,18 +109,18 @@ all: file_targets mapreduce
 $(BUILD_DIR)/%.html: $(SOURCE_DIR)/%.html
 	@mkdir -p $(dir $@)
 
-	$(MKFILE_DIR)/single.sh -d $< > $(TMP_FINAL_TARGET)
+	@$(MKFILE_DIR)/single.sh -d $< > $(TMP_FINAL_TARGET)
 	
-	$(shell touch -t $(MAKE_START_TIME) $(TMP_FINAL_TARGET))
+	@$(shell touch -t $(MAKE_START_TIME) $(TMP_FINAL_TARGET))
 	
 	# And atomically update our actual target
-	mv $(TMP_FINAL_TARGET) $@
+	@mv $(TMP_FINAL_TARGET) $@
 
 
 # Rule to copy unmodified files 
 $(BUILD_DIR)/%: $(SOURCE_DIR)/% $(IMAGE_FILES) $(FONT_FILES) $(SVG_FILES)
 	@mkdir -p $(dir $@)
-	cp $< $@
+	@cp $< $@
 
 # Rule to create favicons
 # the complex patsubst is needed to extract just the size from the target filename

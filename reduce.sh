@@ -265,7 +265,7 @@ reduce() {
                 if [[ -n "$mapScript" ]]; then
                     debug "Starting to process file: $file with map script: $mapScript"
                     if mapResultPath=$(process_file_with_map "$file" "$mapScript" "$extension"); then
-                        debug "Map successful for $file"
+                        debug "Map successful for $file --> ${mapResultPath}"
                         successful_map_results="${successful_map_results} ${mapResultPath}"
                     else
                         mapExitCode=$?
@@ -273,6 +273,8 @@ reduce() {
                     fi
                 fi
             done
+
+            debug "Collected map results: $successful_map_results"
             
             if [[ -n "$reduceScript" && -n "$successful_map_results" ]]; then
                 # Process all collected map results with the reduce script
