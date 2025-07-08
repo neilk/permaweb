@@ -1,5 +1,8 @@
 MAKE_START_TIME := $(shell date "+%Y%m%d%H%M.%S")
 
+# If Make was invoked with debugging, pass along a debug flag to the scripts
+export DEBUG=$(if $(findstring d,$(MAKEFLAGS)),-d)
+
 # Define directories
 
 # Source files that have a more or less one-to-one relationship with the built files
@@ -81,9 +84,7 @@ FAVICON_ICO_TARGET := $(BUILD_DIR)/favicon.ico
 # This is going to rely significantly on caching if it's going to be fast.
 # This will fail if the build directory doesn't exist... because we don't know where it is, we're delegating that to reduce.sh
 mapreduce:
-	@echo "Map-reduce targets"
-
-	$(MKFILE_DIR)/reduce.sh -d $< $(SOURCE_DIR)
+	$(MKFILE_DIR)/reduce.sh $(SOURCE_DIR)
 
 
 file_targets: $(HTML_TARGETS) $(IMAGE_TARGETS) $(FONT_TARGETS) $(SVG_TARGETS) $(PDF_TARGETS) $(FAVICON_TARGETS) $(FAVICON_ICO_TARGET) $(CSS_TARGETS) $(TXT_TARGETS) $(JS_TARGETS)
@@ -141,8 +142,18 @@ TEST_DIRS := $(filter %/, $(wildcard test/*/))
 # Generate test targets for each test.sh script
 TESTS := $(TEST_DIRS:%=%test.sh)
 
+# Test the testing library itself
+test-lib-test:
+	@echo "\nTesting the testing library..." >&2
+	@echo "Running passing tests..." >&2
+	@bash test/lib-test-passing.sh || exit 1
+	@echo "Running eval tests..." >&2
+	@bash test/lib-test-eval.sh || exit 1
+	@echo "Testing failure detection..." >&2
+	@bash test/lib-test-failing.sh && echo "ERROR: Failing test should have failed!" && exit 1 || echo "✓ Failure detection works correctly"
+
 # Default target to run all tests
-test: $(TESTS)
+test: $(TESTS) test-lib-test
 	@echo "\nAll tests executed." >&2
 
 # Pattern rule to run each test script
@@ -159,4 +170,4 @@ clean:
 	rm -rf $(BUILD_DIR)/*
 
 # Phony targets
-.PHONY: all clean test mapreduce $(TESTS)
+.PHONY: all clean test mapreduce test-lib-test $(TESTS)
