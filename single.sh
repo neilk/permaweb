@@ -166,6 +166,16 @@ for script in "${scripts[@]}"; do
         debug "Script ${script} failed; skipping";
         continue;
     fi
+    # Somehow, this has occurred that we get success on the script but no output path. This indicates a bug in our processing, probably,
+    # but we guard against it anyway.
+    if [[ -z "${newContentPath}" ]]; then
+        warn "Script ${script} < "${contentPath}" did not produce a path";
+        continue;
+    fi
+    if [[ ! -f "${newContentPath}" ]]; then
+        warn "Script ${script} < "${contentPath}" was supposed to produce a file: ${newContentPath} does not exist";
+        continue;
+    fi
 
     debug "new input path is ${newContentPath}";
     contentPath="${newContentPath}";
