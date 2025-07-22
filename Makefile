@@ -109,11 +109,10 @@ all: file_targets mapreduce
 $(BUILD_DIR)/%.html: $(SOURCE_DIR)/%.html
 	@mkdir -p $(dir $@)
 
-	@$(MKFILE_DIR)/single.sh -d $< > $(TMP_FINAL_TARGET)
+	@$(MKFILE_DIR)/single.sh $< > $(TMP_FINAL_TARGET)
 	
 	@$(shell touch -t $(MAKE_START_TIME) $(TMP_FINAL_TARGET))
 	
-	# And atomically update our actual target
 	@mv $(TMP_FINAL_TARGET) $@
 
 
