@@ -90,7 +90,7 @@ executeCached() {
     
     debug "trying ${scriptExec} (exec: ${scriptExec})";
 
-    # If we have never run this before, do so, cache the results, and validate the output
+    # If we have never run this before, do so and cache the results
     if [[ ! -s "${cachedExitCodePath}" ]]; then
         # we have never run this before
         debug "running ${scriptExec} on ${contentPath}";
@@ -110,17 +110,11 @@ executeCached() {
         debug "${scriptExec} < ${contentPath} > ${tempStdoutPath} 2>${tempStderrPath}"
         "${scriptExec}" < "${contentPath}" > "${tempStdoutPath}" 2>"${tempStderrPath}"
         local exitCode=$?
-        if [[ $exitCode -ne 0 ]]; then
-            warn "${PERMAWEB_SOURCE_PATH}: Script ${scriptExec} failed with exit code ${exitCode}"
-        fi
 
         if [[ -n "$validator" ]]; then
             debug "running validator ${validator}";
             "${validator}" < "${tempStdoutPath}" 1>&2 2>>"${tempStderrPath}"
             exitCode=$?
-        fi
-        if [[ $exitCode -ne 0 ]]; then
-            warn "${PERMAWEB_SOURCE_PATH}: Validation after ${scriptExec} failed with exit code ${exitCode}"
         fi
 
         echo "${exitCode}" > "${cachedExitCodePath}"
