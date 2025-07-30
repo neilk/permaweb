@@ -163,7 +163,7 @@ for script in "${scripts[@]}"; do
     returnCode=$?
     debug "return code from result is ${returnCode}";
     if [[ $returnCode -ne 0 ]]; then
-        debug "Script ${script} failed; skipping";
+        warn "${PERMAWEB_SOURCE_PATH}: Script ${script} failed or failed to validate; skipping";
         continue;
     fi
     # Somehow, this has occurred that we get success on the script but no output path. This indicates a bug in our processing, probably,
