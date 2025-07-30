@@ -46,6 +46,9 @@ TXT_FILES := $(shell find $(SOURCE_DIR) -type f -name '*.txt')
 # JavaScript
 JS_FILES := $(shell find $(SOURCE_DIR) -type f -name '*.js')
 
+# Movies
+MOVIE_FILES := $(shell find $(SOURCE_DIR) -type f \( -name '*.mp4' -o -name '*.webm' \))
+
 # Generate the list of targets to build for HTML files
 HTML_TARGETS := $(patsubst $(SOURCE_DIR)/%.html, $(BUILD_DIR)/%.html, $(HTML_FILES))
 
@@ -70,6 +73,8 @@ TXT_TARGETS := $(patsubst $(SOURCE_DIR)/%, $(BUILD_DIR)/%, $(TXT_FILES))
 # JS targets
 JS_TARGETS := $(patsubst $(SOURCE_DIR)/%, $(BUILD_DIR)/%, $(JS_FILES))
 
+# Movie targets
+MOVIE_TARGETS := $(patsubst $(SOURCE_DIR)/%, $(BUILD_DIR)/%, $(MOVIE_FILES))
 
 # Sized favicon PNG targets. You'll need meta tags in your HTML to use these.
 FAVICON_SIZES := 16 32 96
@@ -84,7 +89,7 @@ mapreduce:
 	@$(MKFILE_DIR)/reduce.sh $(SOURCE_DIR)
 
 
-file_targets: $(HTML_TARGETS) $(IMAGE_TARGETS) $(FONT_TARGETS) $(SVG_TARGETS) $(PDF_TARGETS) $(FAVICON_TARGETS) $(FAVICON_ICO_TARGET) $(CSS_TARGETS) $(TXT_TARGETS) $(JS_TARGETS)
+file_targets: $(HTML_TARGETS) $(IMAGE_TARGETS) $(FONT_TARGETS) $(SVG_TARGETS) $(PDF_TARGETS) $(FAVICON_TARGETS) $(FAVICON_ICO_TARGET) $(CSS_TARGETS) $(TXT_TARGETS) $(JS_TARGETS) $(MOVIE_TARGETS)
 
 # Default target
 all: file_targets mapreduce
