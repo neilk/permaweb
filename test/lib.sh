@@ -52,7 +52,7 @@ getFileHash() {
 # Usage: generate_random_string [length]
 generate_random_string() {
     local length=${1:-8}
-    LC_CTYPE=C tr -dc '[:alnum:]' < /dev/random | dd bs="$length" count=1 2>/dev/null
+    (dd if=/dev/urandom bs="$length" count=1 2>/dev/null) | LC_CTYPE=C tr -dc '[:alnum:]'
 }
 
 
