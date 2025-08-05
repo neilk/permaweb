@@ -21,6 +21,7 @@ TMP_FINAL_TARGET = $(MKFILE_DIR)/.tmp
 
 
 # Define the list(s) of files to build
+ifneq ($(wildcard source),)   # SOURCE check: if we look for reducers/ , and find it is not empty
 
 # Find all HTML files in the source directory
 HTML_FILES := $(shell find $(SOURCE_DIR) -type f -name '*.html')
@@ -88,6 +89,7 @@ FAVICON_TARGETS := $(addprefix $(BUILD_DIR)/icons/favicon-, $(addsuffix .png, $(
 # Traditional favicon.ico target
 FAVICON_ICO_TARGET := $(BUILD_DIR)/favicon.ico
 
+endif  # end SOURCE check
 
 ####################################################################################################### 
 # DYNAMICALLY GENERATED RULES
@@ -139,14 +141,13 @@ $(eval $(call create_mapreduce_rule,$(word 1,$(subst |, ,$(rule_info))),$(word 2
 
 endif  # end REDUCERS check
 
-# ?? obsolete - this rule is very simple, not dynamic, but might work more robustly
-# MAPREDUCE_FILES = $(wildcard reduce/*)
-# mapreduce: $(MAPREDUCE_FILES) $(HTML_FILES)
-#	@$(MKFILE_DIR)/reduce.sh $(SOURCE_DIR)
-
 #
 # END DYNAMICALLY GENERATED RULES
 #######################################################################################################
+
+# This is the one time that from _one_ file we generate _many_ files. This doesn't fit our usual pattern, 
+# but maybe we can create a new pattern for it later. I think it's okay for it to be opinionated, we are 
+# just building websites.
 
 # Rule to create favicons
 # the complex patsubst is needed to extract just the size from the target filename
