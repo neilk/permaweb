@@ -28,7 +28,7 @@ cacheDir=$(mktemp -d "/tmp/permaweb.XXXXX" || exit 1)
 # Function to create a header file with unique content
 create_unique_header() {
     local unique_id
-    unique_id=$(LC_ALL=C tr -dc 'a-zA-Z0-9' </dev/urandom | head -c 10)
+    unique_id=$(generate_random_string 10)
     
     cat > scripts/html/10_addHeader/header.html << EOF
 <header>

@@ -21,7 +21,7 @@ generate_file() {
     # Generate the file with specified number of lines
     for i in $(seq 1 "$num_lines"); do
         # 8 random alphanumeric characters
-        randomText=$(LC_CTYPE=C tr -dc '[:alnum:]' < /dev/random | head -c 8)
+        randomText=$(generate_random_string 8)
         echo "Line $i - $randomText" >> "$file_path"
     done
 }

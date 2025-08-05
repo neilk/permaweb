@@ -48,6 +48,13 @@ getFileHash() {
     sha1sum "$1" | cut -d' ' -f1
 }
 
+# Generate random alphanumeric string
+# Usage: generate_random_string [length]
+generate_random_string() {
+    local length=${1:-8}
+    LC_CTYPE=C tr -dc '[:alnum:]' < /dev/random | dd bs="$length" count=1 2>/dev/null
+}
+
 
 # Common tests
 assert_cache_ok() {
