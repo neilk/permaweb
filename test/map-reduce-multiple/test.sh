@@ -28,6 +28,13 @@ EOF
 )
 
 rules=$(test_mapreduce_discovery 2 "reducers")
+echo "----"
+echo "Expected rules:" >&2;
+echo "$expectedRules" >&2;
+echo "----"
+echo "Discovered rules:" >&2;
+echo "$rules" >&2;
+
 
 # assert that rules are identical
 assert "Discovered rules match expected" "\"$rules\" == \"$expectedRules\""
