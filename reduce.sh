@@ -1,5 +1,7 @@
 #!/bin/bash
 . "$(dirname "$0")/lib.sh"
+. "$(dirname "$0")/_reduce.sh"
+
 # Map-reduce extension to permaweb
 # Takes a source directory, runs map scripts on each file, then reduce scripts on the results
 # Usage: permaweb-mr.sh [-d] [-s scripts_dir] [-c cache_dir] [-o output_dir] source_dir target_file
@@ -210,6 +212,62 @@ function getMapOrReduceScript() {
     echo "$script"
 }
 
+function reduceDir() {
+    local dir="$1"
+    debug "Checking directory: $dir"
+    # Check if the directory contains "map", "map.*", "reduce", or "reduce.*"
+    local mapScript
+    mapScript=$(getMapOrReduceScript "$dir" "map")
+    local reduceScript
+    reduceScript=$(getMapOrReduceScript "$dir" "reduce")
+    
+    if [[ -n "$mapScript" && -n "$reduceScript" ]]; then
+        debug "Found map and reduce scripts in $dir"
+        debug "Using map script: <$mapScript>"
+        debug "Using reduce script: <$reduceScript>"        
+        # Determine the target directory path rebased to the outputDir
+        relativePath=$(realpath --relative-to="${reducersDir}/${extension}" "$dir")
+        targetPath="${outputDir}/${relativePath}"
+        debug "Target path: $targetPath"
+        # Ensure the target directory exists
+        mkdir -p "$(dirname "$targetPath")"
+        
+        # Process files in the source directory matching the extension
+        debug "Finding source files in $sourceDir with extension: <$extension>"
+        source_files=$(find "$sourceDir" -type f -name "*.${extension}")
+        successful_map_results=""
+        
+        debug "Found source files: $source_files"
+        for file in $source_files; do
+            if [[ -n "$mapScript" ]]; then
+                debug "Starting to process file: $file with map script: $mapScript"
+                if mapResultPath=$(process_file_with_map "$file" "$mapScript" "$extension"); then
+                    debug "Map successful for $file --> ${mapResultPath}"
+                    successful_map_results="${successful_map_results} ${mapResultPath}"
+                else
+                    mapExitCode=$?
+                    debug "Map failed for $file with exit code $mapExitCode"
+                fi
+            fi
+        done
+
+        debug "Collected map results: $successful_map_results"
+        
+        if [[ -n "$reduceScript" && -n "$successful_map_results" ]]; then
+            # Process all collected map results with the reduce script
+            if reduceResultPath=$(process_with_reduce "$successful_map_results" "$reduceScript" "$extension"); then
+                debug "Reduce successful for $dir"
+                # Output the result to the target directory
+                cp "$reduceResultPath" "${targetPath}"
+                debug "Output written to ${targetPath}"
+            else
+                reduceExitCode=$?
+                warn "Reduce failed for $dir with exit code $reduceExitCode"
+            fi
+        fi
+    fi
+}
+
 # Given a directory structure like this:
 # reducers/
 #   html/
@@ -237,58 +295,7 @@ reduce() {
     # Perform a depth-first search through "${reducersDir}/${extension}"
 
     find "$reducerDir" -type d | while read -r dir; do
-        debug "Checking directory: $dir"
-        # Check if the directory contains "map", "map.*", "reduce", or "reduce.*"
-        local mapScript
-        mapScript=$(getMapOrReduceScript "$dir" "map")
-        local reduceScript
-        reduceScript=$(getMapOrReduceScript "$dir" "reduce")
-        
-        if [[ -n "$mapScript" && -n "$reduceScript" ]]; then
-            debug "Found map and reduce scripts in $dir"
-            debug "Using map script: <$mapScript>"
-            debug "Using reduce script: <$reduceScript>"        
-            # Determine the target directory path rebased to the outputDir
-            relativePath=$(realpath --relative-to="${reducersDir}/${extension}" "$dir")
-            targetPath="${outputDir}/${relativePath}"
-            debug "Target path: $targetPath"
-            # Ensure the target directory exists
-            mkdir -p "$(dirname "$targetPath")"
-            
-            # Process files in the source directory matching the extension
-            debug "Finding source files in $sourceDir with extension: <$extension>"
-            source_files=$(find "$sourceDir" -type f -name "*.${extension}")
-            successful_map_results=""
-            
-            debug "Found source files: $source_files"
-            for file in $source_files; do
-                if [[ -n "$mapScript" ]]; then
-                    debug "Starting to process file: $file with map script: $mapScript"
-                    if mapResultPath=$(process_file_with_map "$file" "$mapScript" "$extension"); then
-                        debug "Map successful for $file --> ${mapResultPath}"
-                        successful_map_results="${successful_map_results} ${mapResultPath}"
-                    else
-                        mapExitCode=$?
-                        debug "Map failed for $file with exit code $mapExitCode"
-                    fi
-                fi
-            done
-
-            debug "Collected map results: $successful_map_results"
-            
-            if [[ -n "$reduceScript" && -n "$successful_map_results" ]]; then
-                # Process all collected map results with the reduce script
-                if reduceResultPath=$(process_with_reduce "$successful_map_results" "$reduceScript" "$extension"); then
-                    debug "Reduce successful for $dir"
-                    # Output the result to the target directory
-                    cp "$reduceResultPath" "${targetPath}"
-                    debug "Output written to ${targetPath}"
-                else
-                    reduceExitCode=$?
-                    warn "Reduce failed for $dir with exit code $reduceExitCode"
-                fi
-            fi
-        fi
+        reduceDir "$dir"
     done
     
 }

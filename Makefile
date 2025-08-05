@@ -49,6 +49,9 @@ JS_FILES := $(shell find $(SOURCE_DIR) -type f -name '*.js')
 # Movies
 MOVIE_FILES := $(shell find $(SOURCE_DIR) -type f \( -name '*.mp4' -o -name '*.webm' \))
 
+# A list of all source files
+ALL_FILES := $(HTML_FILES) $(IMAGE_FILES) $(FONT_FILES) $(SVG_FILES) $(PDF_FILES) $(CSS_FILES) $(TXT_FILES) $(JS_FILES) $(MOVIE_FILES)
+
 # Generate the list of targets to build for HTML files
 HTML_TARGETS := $(patsubst $(SOURCE_DIR)/%.html, $(BUILD_DIR)/%.html, $(HTML_FILES))
 
@@ -76,23 +79,84 @@ JS_TARGETS := $(patsubst $(SOURCE_DIR)/%, $(BUILD_DIR)/%, $(JS_FILES))
 # Movie targets
 MOVIE_TARGETS := $(patsubst $(SOURCE_DIR)/%, $(BUILD_DIR)/%, $(MOVIE_FILES))
 
+# All targets 
+ALL_FILE_TARGETS := $(HTML_TARGETS) $(IMAGE_TARGETS) $(FONT_TARGETS) $(SVG_TARGETS) $(PDF_TARGETS) $(CSS_TARGETS) $(TXT_TARGETS) $(JS_TARGETS) $(MOVIE_TARGETS)
+
 # Sized favicon PNG targets. You'll need meta tags in your HTML to use these.
 FAVICON_SIZES := 16 32 96
 FAVICON_TARGETS := $(addprefix $(BUILD_DIR)/icons/favicon-, $(addsuffix .png, $(FAVICON_SIZES)))
 # Traditional favicon.ico target
 FAVICON_ICO_TARGET := $(BUILD_DIR)/favicon.ico
 
-# This is going to run in its entirety on every build. 
-# This is going to rely significantly on caching if it's going to be fast.
-# This will fail if the build directory doesn't exist... because we don't know where it is, we're delegating that to reduce.sh
-mapreduce:
-	@$(MKFILE_DIR)/reduce.sh $(SOURCE_DIR)
 
+####################################################################################################### 
+# DYNAMICALLY GENERATED RULES
 
-file_targets: $(HTML_TARGETS) $(IMAGE_TARGETS) $(FONT_TARGETS) $(SVG_TARGETS) $(PDF_TARGETS) $(FAVICON_TARGETS) $(FAVICON_ICO_TARGET) $(CSS_TARGETS) $(TXT_TARGETS) $(JS_TARGETS) $(MOVIE_TARGETS)
+# We have the concept of "map-reduce" targets. For instance, if we want to express that every time an HTML file 
+# changes, we want to process it into an RSS file, we can do that by creating a directory structure like this:
+# reducers/
+#   html/
+#     feeds/
+#       rss.xml/
+#          map.sh
+#          reduce 
+#            main.sh
+#            rss.xml.template
+# 
+# Note that within the rss.xml directory, we could have a `map` subdirectory or a `map.*` file.
+# 
+# So here we will dynamically generate rules from these directories. Basically we will depend on `reduce.sh` doing the 
+# right thing (it will find files all over again, maybe we could fix that), but we will only invoke it when certain files change.
 
-# Default target
-all: file_targets mapreduce
+# Establish what the map-reduce targets are. In our example above, it would be $(BUILD_DIR)/feeds/rss.xml.
+
+ifneq ($(wildcard reducers),)   # REDUCERS check: if we look for reducers/ , and find it is not empty
+
+MAPREDUCE_TARGETS := $(shell find reducers -type d | while read dir; do \
+	if [[ -d "$$dir/map" ]] || ls "$$dir"/map.* >/dev/null 2>&1; then \
+		echo "$$dir"; \
+	fi; \
+done | sed 's|^reducers/[^/]*/|$(BUILD_DIR)/|')
+
+# Helper function to convert extension to uppercase for variable names
+to_upper = $(shell echo $(1) | tr '[:lower:]' '[:upper:]')
+
+# Function to create mapreduce rule for a specific reducer directory. If any HTML file changes, or if 
+# any of the scripts to do the map-reduce processing change, then the target will be rebuilt.
+#   e.g. given        "reducers/html/feeds/rss.xml" 
+#        it creates:  $(BUILD_DIR)/feeds/rss.xml: $(HTML_FILES) reducers/html/feeds/rss.xml/%
+define create_mapreduce_rule
+$(subst reducers/$(2)/,$(BUILD_DIR)/,$(1)): $($(call to_upper,$(2))_FILES) $(wildcard $(1)/*)
+	@$(MKFILE_DIR)/reduce.sh $(SOURCE_DIR) -o $(BUILD_DIR) -s reducers
+endef
+
+# Apply the function to each reducer directory to create individual rules
+$(foreach reducer_dir,$(shell find reducers -type d | while read dir; do \
+	if [[ -d "$$dir/map" ]] || ls "$$dir"/map.* >/dev/null 2>&1; then \
+			echo "$$dir"; \
+	fi; \
+done), \
+$(eval $(call create_mapreduce_rule,$(reducer_dir),$(word 2,$(subst /, ,$(reducer_dir))))))
+
+endif  # end REDUCERS check
+
+# ?? obsolete - this rule is very simple, not dynamic, but might work more robustly
+# MAPREDUCE_FILES = $(wildcard reduce/*)
+# mapreduce: $(MAPREDUCE_FILES) $(HTML_FILES)
+#	@$(MKFILE_DIR)/reduce.sh $(SOURCE_DIR)
+
+#
+# END DYNAMICALLY GENERATED RULES
+#######################################################################################################
+
+# Rule to create favicons
+# the complex patsubst is needed to extract just the size from the target filename
+FAVICON_SOURCE := $(METADATA_DIR)/favicon-source.png
+$(BUILD_DIR)/icons/favicon-%: $(FAVICON_SOURCE)
+	@mkdir -p $(ICONS_DIR)
+	./favicons.sh $< $(patsubst $(ICONS_DIR)/favicon-%.png,%,$@) > $@
+$(FAVICON_ICO_TARGET): $(FAVICON_TARGETS)
+	magick $(FAVICON_SOURCE) -resize "32x32" $@
 
 # Define a rule to process each HTML file
 # 
@@ -113,28 +177,20 @@ all: file_targets mapreduce
 # TODO: maybe the script should handle tempfiles itself?
 $(BUILD_DIR)/%.html: $(SOURCE_DIR)/%.html
 	@mkdir -p $(dir $@)
-
 	@$(MKFILE_DIR)/single.sh $< > $(TMP_FINAL_TARGET)
-	
-	@$(shell touch -t $(MAKE_START_TIME) $(TMP_FINAL_TARGET))
-	
+	@$(shell touch -t $(MAKE_START_TIME) $(TMP_FINAL_TARGET))	
 	@mv $(TMP_FINAL_TARGET) $@
 
-
-# Rule to copy unmodified files 
-$(BUILD_DIR)/%: $(SOURCE_DIR)/% $(IMAGE_FILES) $(FONT_FILES) $(SVG_FILES)
+# Rule to simply copy all files that aren't otherwise processed. 
+# Because the previous rule(s) are more specific, this just gets anything not otherwise specified
+$(BUILD_DIR)/%: $(SOURCE_DIR)/%
 	@mkdir -p $(dir $@)
 	@cp $< $@
 
-# Rule to create favicons
-# the complex patsubst is needed to extract just the size from the target filename
-FAVICON_SOURCE := $(METADATA_DIR)/favicon-source.png
-$(BUILD_DIR)/icons/favicon-%: $(FAVICON_SOURCE)
-	@mkdir -p $(ICONS_DIR)
-	./favicons.sh $< $(patsubst $(ICONS_DIR)/favicon-%.png,%,$@) > $@
-$(FAVICON_ICO_TARGET): $(FAVICON_TARGETS)
-	magick $(FAVICON_SOURCE) -resize "32x32" $@
+# Default target
+all: $(ALL_FILE_TARGETS) $(MAPREDUCE_TARGETS) $(FAVICON_TARGETS) $(FAVICON_ICO_TARGET)
 
+#######################################################################################################
 ## TESTS 
 
 # List of test directories
