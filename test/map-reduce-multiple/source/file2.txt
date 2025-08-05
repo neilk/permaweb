@@ -1,0 +1,4 @@
+First line of file two
+Second line with different words
+Third line
+Fourth line here
