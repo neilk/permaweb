@@ -27,14 +27,11 @@ reducers/txt/deep/wordcount.txt|txt|deep/wordcount.txt|reducers/txt/deep/wordcou
 EOF
 )
 
-rules=$(test_mapreduce_discovery 2 "reducers")
-echo "----"
-echo "Expected rules:" >&2;
-echo "$expectedRules" >&2;
-echo "----"
-echo "Discovered rules:" >&2;
-echo "$rules" >&2;
+# Sort the expected rules to ensure consistent comparison
+expectedRules=$(echo "$expectedRules" | sort)
 
+# Now get the actual discovered rules, and sort them too
+rules=$(test_mapreduce_discovery 2 "reducers" | sort)
 
 # assert that rules are identical
 assert "Discovered rules match expected" "\"$rules\" == \"$expectedRules\""
