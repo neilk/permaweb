@@ -123,20 +123,19 @@ to_upper = $(shell echo $(1) | tr '[:lower:]' '[:upper:]')
 
 # Function to create mapreduce rule for a specific reducer directory. If any HTML file changes, or if 
 # any of the scripts to do the map-reduce processing change, then the target will be rebuilt.
-#   e.g. given        "reducers/html/feeds/rss.xml" 
-#        it creates:  $(BUILD_DIR)/feeds/rss.xml: $(HTML_FILES) reducers/html/feeds/rss.xml/%
+#   e.g. given        
+#      "reducers/html/feeds/rss.xml" and relative target "feeds/rss.xml"
+#   it creates:  
+#      $(BUILD_DIR)/feeds/rss.xml: $(HTML_FILES) reducers/html/feeds/rss.xml/%
+#        $(MKFILE_DIR)/reduce-target.sh -s $(SOURCE_DIR) -e html -m reducers/html/feeds/rss.xml/map.js -r reducers/html/feeds/rss.xml/reduce.sh -t $(BUILD_DIR)/feeds/rss.xml
 define create_mapreduce_rule
-$(subst reducers/$(2)/,$(BUILD_DIR)/,$(1)): $($(call to_upper,$(2))_FILES) $(wildcard $(1)/*)
-	@$(MKFILE_DIR)/reduce.sh $(SOURCE_DIR) -o $(BUILD_DIR) -s reducers
+$(BUILD_DIR)/$(3): $($(call to_upper,$(2))_FILES) $(wildcard $(1)/*)
+	@$(MKFILE_DIR)/reduce-target.sh -s $(SOURCE_DIR) -e $(2) -m $(4) -r $(5) -t $(BUILD_DIR)/$(3)
 endef
 
 # Apply the function to each reducer directory to create individual rules
-$(foreach reducer_dir,$(shell find reducers -type d | while read dir; do \
-	if [[ -d "$$dir/map" ]] || ls "$$dir"/map.* >/dev/null 2>&1; then \
-			echo "$$dir"; \
-	fi; \
-done), \
-$(eval $(call create_mapreduce_rule,$(reducer_dir),$(word 2,$(subst /, ,$(reducer_dir))))))
+$(foreach rule_info,$(shell $(MKFILE_DIR)/find-map-reduce.sh), \
+$(eval $(call create_mapreduce_rule,$(word 1,$(subst |, ,$(rule_info))),$(word 2,$(subst |, ,$(rule_info))),$(word 3,$(subst |, ,$(rule_info))),$(word 4,$(subst |, ,$(rule_info))),$(word 5,$(subst |, ,$(rule_info))))))
 
 endif  # end REDUCERS check
 

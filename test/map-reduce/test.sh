@@ -8,7 +8,6 @@ cd "$testDir" || exit
 source "$(dirname "$testDir")/lib.sh"
 trap 'handle_error $LINENO' ERR
 
-
 # Setup function to generate a file with N lines, with unique content
 generate_file() {
     local file_path=$1
@@ -42,16 +41,11 @@ outputDir=$(mktemp -d "/tmp/permaweb.XXXXX" || exit 1)
 # where we expect output to be generated
 outputFile="$outputDir/linecount.txt"
 
-# Run the map-reduce process
-doMapReduce() {
-    ../../reduce.sh -c "$cacheDir" -s "./reducers" -o "$outputDir" "source"
-}
-
 # We'll watch these files to see if the map and reduce scripts ran
 PERMAWEB_SCRIPT_RECORD=$(mktemp -q "/tmp/permaweb.XXXX" || exit 1)
 export PERMAWEB_SCRIPT_RECORD
 
-doMapReduce
+doMapReduce "source" "$cacheDir" "reducers" "$outputDir"
 
 # Common assertions for cache integrity
 assert_cache_ok "$cacheDir"
@@ -82,7 +76,7 @@ assert "map and reduce scripts ran as expected" "$scriptRecordMatch1 == true"
 PERMAWEB_SCRIPT_RECORD=$(mktemp -q "/tmp/permaweb.XXXX" || exit 1)
 export PERMAWEB_SCRIPT_RECORD
 
-doMapReduce
+doMapReduce "source" "$cacheDir" "reducers" "$outputDir"
 
 # Scripts should not have run if cache is working
 isScriptRecordEmpty=1
@@ -101,7 +95,7 @@ generate_file "source/file2.txt" 12  # Changed from 10 to 12 lines
 # Update expected count
 expected_count=$((5 + 12 + 15))
 
-doMapReduce
+doMapReduce "source" "$cacheDir" "reducers" "$outputDir"
 
 # Verify that map scripts ran on the changed file only, and then one reduce script
 expectedScriptRecord3=$(cat << 'EOF'

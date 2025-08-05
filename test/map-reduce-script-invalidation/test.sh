@@ -20,9 +20,9 @@ outputDir=$(mktemp -d "/tmp/permaweb.XXXXX" || exit 1)
 outputFile="$outputDir/linecount.txt"
 
 # Run the map-reduce process with specified reducers directory
-doMapReduce() {
+doMapReduceWithReducersDir() {
     local reducersDir="$1"
-    ../../reduce.sh -c "$cacheDir" -s "$reducersDir" -o "$outputDir" "source"
+    doMapReduce "source" "$cacheDir" "$reducersDir" "$outputDir"
 }
 
 # ========
@@ -32,7 +32,7 @@ doMapReduce() {
 PERMAWEB_SCRIPT_RECORD=$(mktemp -q "/tmp/permaweb.XXXX" || exit 1)
 export PERMAWEB_SCRIPT_RECORD
 
-doMapReduce "./reducers_1"
+doMapReduceWithReducersDir "reducers_1"
 
 # Common assertions for cache integrity
 assert_cache_ok "$cacheDir"
@@ -65,7 +65,7 @@ assert "first run: map and reduce scripts ran as expected" "$scriptRecordMatch1 
 PERMAWEB_SCRIPT_RECORD=$(mktemp -q "/tmp/permaweb.XXXX" || exit 1)
 export PERMAWEB_SCRIPT_RECORD
 
-doMapReduce "./reducers_1"
+doMapReduceWithReducersDir "reducers_1"
 
 # Scripts should not have run if cache is working
 isScriptRecordEmpty=1
@@ -85,7 +85,7 @@ assert "second run output still matches expected value" "$actual_output2 == $exp
 PERMAWEB_SCRIPT_RECORD=$(mktemp -q "/tmp/permaweb.XXXX" || exit 1)
 export PERMAWEB_SCRIPT_RECORD
 
-doMapReduce "./reducers_2"
+doMapReduceWithReducersDir "reducers_2"
 
 # Only reduce script should run because map script hash is the same but reduce script hash changed
 expectedScriptRecord3=$(cat << 'EOF'
@@ -110,7 +110,7 @@ assert "third run output reflects script change" "\"${actual_output3}\"==\"${exp
 PERMAWEB_SCRIPT_RECORD=$(mktemp -q "/tmp/permaweb.XXXX" || exit 1)
 export PERMAWEB_SCRIPT_RECORD
 
-doMapReduce "./reducers_2"
+doMapReduceWithReducersDir "reducers_2"
 
 # Scripts should not have run if cache is working
 isScriptRecordEmpty=1

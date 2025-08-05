@@ -135,3 +135,173 @@ executeCached() {
     fi
     return "${cachedExitCode}"
 }
+
+
+
+# Function to get a file's extension
+get_extension() {
+    echo "${1##*.}"
+}
+
+
+# Function to find executables with specific prefixes in a directory
+find_executables() {
+    local dir="$1"
+    local prefix="$2"
+    find "$dir" -maxdepth 1 -type f -name "${prefix}*" | sort | while read -r script; do
+        if [[ -x "$script" ]]; then
+            echo "$script"
+        fi
+    done
+}
+
+# Function to find directory-based executables with specific prefixes
+find_dir_executables() {
+    local dir="$1"
+    local prefix="$2"
+    find "$dir" -maxdepth 1 -type d -name "${prefix}*" | sort | while read -r script_dir; do
+        if [[ -x "$script_dir/main" || -x "$script_dir/main.sh" ]]; then
+            echo "$script_dir"
+        fi
+    done
+}
+
+# Function to determine the right executable for a script dir
+get_script_entry() {
+    local dir="$1"
+    find "$dir" -maxdepth 1 -type f \( -name "main" -o -name "main.*" \) | sort | head -1 | while read -r script; do
+        if [[ -x "$script" ]]; then
+            echo "$script"
+        fi
+    done
+}
+
+
+
+# Process a single file with the map script and return the map result path
+# TODO - replace as much as possible with executeCached()
+process_file_with_map() {
+    local file="$1"
+    local mapScript="$2"
+    local extension="$3"
+    
+    local scriptHash scriptExec
+    
+    # Handle directory-based scripts
+    if [[ -d "$mapScript" ]]; then
+        scriptHash=$(getDirHash "$mapScript")
+        scriptExec=$(get_script_entry "$mapScript")
+    else
+        scriptHash=$(getFileHash "$mapScript")
+        scriptExec="$mapScript"
+    fi
+    
+    debug "Processing $file with map script $mapScript"
+    
+    # Set environment variable with original file path for script use
+    export PERMAWEB_SOURCE_PATH="$file"
+    
+    # Use executeCached for the caching functionality
+    executeCached "$scriptHash" "$scriptExec" "$file" "$validator"
+}
+
+# Process all collected map results with the reduce script
+# TODO - replace as much as possible with executeCached()
+process_with_reduce() {
+    local mapResults="$1"
+    local reduceScript="$2"
+    local extension="$3"
+    
+    # Create a temporary file listing all map results for environment variable.
+    local tempInputsList
+    tempInputsList=$(mktemp -q "/tmp/permaweb.XXXXX" || exit 1)
+    trap 'rm -f -- "$tempInputsList"' EXIT
+    
+    for result in $mapResults; do
+        echo "$result" >> "$tempInputsList"
+    done
+    
+    # Create hash of all inputs combined with script hash
+    local inputsHash scriptHash combinedHash
+    inputsHash=$(getFileHash "$tempInputsList")
+    
+    # Handle directory-based scripts
+    local scriptExec
+    if [[ -d "$reduceScript" ]]; then
+        scriptHash=$(getDirHash "$reduceScript")
+        scriptExec=$(get_script_entry "$reduceScript")
+    else
+        scriptHash=$(getFileHash "$reduceScript")
+        scriptExec="$reduceScript"
+    fi
+    
+    # Hash the results as a combination of the inputs and the script 
+    combinedHash=$(echo "${inputsHash}${scriptHash}" | sha1sum | cut -d' ' -f1)
+    
+    debug "Processing $(wc -l < "$tempInputsList") map results with reduce script $reduceScript"
+    
+    # Check for validator
+    local validator=""
+    validatorsDir="$reducersDir/validators"
+    if [[ -d "$validatorsDir" ]]; then
+        validatorPath="${validatorsDir}/${extension}"
+        if [[ -f "$validatorPath" && -x "$validatorPath" ]]; then
+            validator="$validatorPath"
+        fi
+    fi
+    
+    # Export variables for the reduce script
+    export PERMAWEB_MAP_RESULTS="$tempInputsList"
+    
+    # Use executeCached for the caching functionality
+    executeCached "$combinedHash" "$scriptExec" "$tempInputsList" "$validator"
+}
+
+
+
+
+
+# Process sce files with map and reduce scripts
+performMapReduce() {
+    local sourceDir="$1"
+    local extension="$2"
+    local mapScript="$3"
+    local reduceScript="$4"
+    local targetPath="$5"
+    
+    # Process files in the source directory matching the extension
+    debug "Finding source files in $sourceDir with extension: <$extension>"
+    source_files=$(find "$sourceDir" -type f -name "*.${extension}")
+    successful_map_results=""
+    
+    debug "Found source files: $source_files"
+    for file in $source_files; do
+        if [[ -n "$mapScript" ]]; then
+            debug "Starting to process file: $file with map script: $mapScript"
+            if mapResultPath=$(process_file_with_map "$file" "$mapScript" "$extension"); then
+                debug "Map successful for $file --> ${mapResultPath}"
+                successful_map_results="${successful_map_results} ${mapResultPath}"
+            else
+                mapExitCode=$?
+                debug "Map failed for $file with exit code $mapExitCode"
+            fi
+        fi
+    done
+
+    debug "Collected map results: $successful_map_results"
+    
+    if [[ -n "$reduceScript" && -n "$successful_map_results" ]]; then
+        # Process all collected map results with the reduce script
+        if reduceResultPath=$(process_with_reduce "$successful_map_results" "$reduceScript" "$extension"); then
+            debug "Reduce successful for $dir"
+            # Output the result to the target directory
+            cp "$reduceResultPath" "${targetPath}"
+            debug "Output written to ${targetPath}"
+        else
+            reduceExitCode=$?
+            warn "Reduce failed for $dir with exit code $reduceExitCode"
+        fi
+    fi
+}
+
+
