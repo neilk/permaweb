@@ -275,6 +275,7 @@ performMapReduce() {
     successful_map_results=""
     
     debug "Found source files: $source_files"
+    export PERMAWEB_SOURCE_DIR="$sourceDir"   # map scripts may need this, to understand relative links in PERMAWEB_SOURCE_PATH. TODO: all paths relative to sourceDir??
     for file in $source_files; do
         if [[ -n "$mapScript" ]]; then
             debug "Starting to process file: $file with map script: $mapScript"
