@@ -27,7 +27,7 @@ ifneq ($(wildcard source),)   # SOURCE check: if we look for reducers/ , and fin
 HTML_FILES := $(shell find $(SOURCE_DIR) -type f -name '*.html')
 
 # Find all image files in the source directory
-IMAGE_FILES := $(shell find $(SOURCE_DIR) -type f \( -name '*.jpg' -o -name '*.jpeg' -o -name '*.gif' -o -name '*.png' \))
+IMAGE_FILES := $(shell find $(SOURCE_DIR) -type f \( -name '*.jpg' -o -name '*.jpeg' -o -name '*.gif' -o -name '*.png' -o -name '*.webp' \))
 
 # Find all font files in the source directory
 FONT_FILES := $(shell find $(SOURCE_DIR) -type f -name '*.ttf')
