@@ -297,6 +297,7 @@ performMapReduce() {
             debug "Reduce successful for $dir"
             # Output the result to the target directory
             cp "$reduceResultPath" "${targetPath}"
+            chmod 644 "${targetPath}"
             debug "Output written to ${targetPath}"
         else
             reduceExitCode=$?
