@@ -18,7 +18,8 @@ assert "first run transforms the page" "$count == 1"
 assert "cache entry exists" "-f $entry/exit"
 
 # Corrupt the cache the way a failed realpath did: exit says 0, stdout link points nowhere.
-ln -sf "" "$entry/1"
+# (Target must be non-empty: Linux symlink(2) rejects an empty target with ENOENT.)
+ln -sf "$cacheDir/does-not-exist" "$entry/1"
 assert "stdout link is now dangling" "! -e $entry/1"
 
 "../../single.sh" -c "$cacheDir" -s "./scripts" "$inputPath" > "$outputPath" 2>/dev/null

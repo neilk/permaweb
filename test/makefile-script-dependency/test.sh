@@ -45,7 +45,7 @@ echo "<footer>FOOTER-CHANGED</footer>" > "$footer"
 assert "changing a script dir file makes target stale" "$(isUpToDate) == false"
 "$MAKE" -f "$makefile" "$target"
 assert "target contains changed footer" "$(grep -c FOOTER-CHANGED "$target") == 1"
-assert "target no longer contains original footer" "$(grep -c FOOTER-ORIGINAL "$target") == 0"
+assert "target no longer contains original footer" "$(grep -c FOOTER-ORIGINAL "$target" || true) == 0"
 
 sleep 1
 
