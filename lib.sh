@@ -51,7 +51,11 @@ cache() {
         debug "cached object ${objectPath} from ${sourcePath}"
     fi
     local relativeObjectPath
-    relativeObjectPath=$(realpath -s --relative-to="$(dirname "${linkPath}")" "${objectPath}")
+    if ! relativeObjectPath=$(realpath -s --relative-to="$(dirname "${linkPath}")" "${objectPath}") \
+        || [[ -z "${relativeObjectPath}" ]]; then
+        warn "cache: could not compute relative path from ${linkPath} to ${objectPath}; is GNU realpath installed?"
+        return 1
+    fi
     ln -sf "${relativeObjectPath}" "${linkPath}"
 }
 
@@ -90,6 +94,13 @@ executeCached() {
     
     debug "trying ${scriptExec} (exec: ${scriptExec})";
 
+    # A cache entry that claims success but whose stdout link does not resolve is corrupt
+    # (e.g. it was written while realpath was failing). Discard it so we re-run below.
+    if [[ -s "${cachedExitCodePath}" && "$(<"${cachedExitCodePath}")" == "0" && ! -e "${cachedStdoutPath}" ]]; then
+        warn "cache entry ${cachePath} is corrupt (success recorded but no output); discarding"
+        rm -rf "${cachePath}"
+    fi
+
     # If we have never run this before, do so and cache the results
     if [[ ! -s "${cachedExitCodePath}" ]]; then
         # we have never run this before
@@ -111,15 +122,26 @@ executeCached() {
         "${scriptExec}" < "${contentPath}" > "${tempStdoutPath}" 2>"${tempStderrPath}"
         local exitCode=$?
 
+        # Validate the output. A script failure is final: validation cannot rescue it.
         if [[ -n "$validator" ]]; then
             debug "running validator ${validator}";
             "${validator}" < "${tempStdoutPath}" 1>&2 2>>"${tempStderrPath}"
-            exitCode=$?
+            local validatorExitCode=$?
+            if [[ $exitCode -eq 0 ]]; then
+                exitCode=$validatorExitCode
+            fi
         fi
 
+        # Cache the outputs first and the exit code last, so that an entry with an exit code
+        # is always complete. If caching fails, leave nothing behind and report failure.
+        if ! cache "${tempStdoutPath}" "${cachedStdoutPath}" \
+            || ! cache "${tempStderrPath}" "${cachedStderrPath}"; then
+            warn "${PERMAWEB_SOURCE_PATH:-}: could not cache results of ${scriptExec}; treating as failure"
+            cat "${tempStderrPath}" >&2 2>/dev/null
+            rm -rf "${cachePath}"
+            return 1
+        fi
         echo "${exitCode}" > "${cachedExitCodePath}"
-        cache "${tempStdoutPath}" "${cachedStdoutPath}";
-        cache "${tempStderrPath}" "${cachedStderrPath}";
     fi
 
     # Now we definitely have some output in the cache, even if it failed

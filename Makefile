@@ -8,6 +8,9 @@ SOURCE_DIR := source
 # Source files that are special, like favicon images
 METADATA_DIR := metadata
 
+# Scripts that transform source files, one subdirectory per file extension
+SCRIPTS_DIR := scripts
+
 # Where the built files will go
 BUILD_DIR := build
 # Where the favicons will go
@@ -25,6 +28,12 @@ ifneq ($(wildcard source),)   # SOURCE check: if we look for reducers/ , and fin
 
 # Find all HTML files in the source directory
 HTML_FILES := $(shell find $(SOURCE_DIR) -type f -name '*.html')
+
+# Find all the scripts that transform source files, including any dependent files
+# living alongside them in script directories. If any of these change, every file
+# they process must be rebuilt. Markdown and dotfiles (e.g. README.md, .gitignore)
+# are documentation or editor noise, so they are ignored.
+SCRIPT_FILES := $(shell find $(SCRIPTS_DIR) -type f -not -name '*.md' -not -path '*/.*' 2>/dev/null)
 
 # Find all image files in the source directory
 IMAGE_FILES := $(shell find $(SOURCE_DIR) -type f \( -name '*.jpg' -o -name '*.jpeg' -o -name '*.gif' -o -name '*.png' -o -name '*.webp' \))
@@ -170,12 +179,15 @@ $(FAVICON_ICO_TARGET): $(FAVICON_TARGETS)
 # Also, often a user will be developing with a "watch" script to reload a changed file, 
 # and we don't want them to load an empty file into their browser. 
 #
+# The target also depends on every script file, so that a change to the pipeline rebuilds
+# every page. single.sh's cache is keyed by content hash, so unchanged steps are cheap.
+#
 # Finally we fiddle with the mtime of the target file to match the invocation of this Makefile.
 # This ensures that if the source files change while this Makefile is running,
 # a subsequent invocation of `make` will notice the targets are out of date.
 #
 # TODO: maybe the script should handle tempfiles itself?
-$(BUILD_DIR)/%.html: $(SOURCE_DIR)/%.html
+$(BUILD_DIR)/%.html: $(SOURCE_DIR)/%.html $(SCRIPT_FILES)
 	@mkdir -p $(dir $@)
 	@$(MKFILE_DIR)/single.sh $< > $(TMP_FINAL_TARGET)
 	@$(shell touch -t $(MAKE_START_TIME) $(TMP_FINAL_TARGET))	

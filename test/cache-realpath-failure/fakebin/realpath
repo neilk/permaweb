@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Imitates macOS /bin/realpath, which rejects GNU options such as --relative-to.
+for arg in "$@"; do
+    case "$arg" in
+        --relative-to=*|-s|--relative-to)
+            echo "realpath: illegal option" >&2
+            exit 1
+            ;;
+    esac
+done
+exec "$PERMAWEB_TEST_REAL_REALPATH" "$@"
