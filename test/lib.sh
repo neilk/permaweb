@@ -48,11 +48,15 @@ getFileHash() {
     sha1sum "$1" | cut -d' ' -f1
 }
 
-# Generate random alphanumeric string
+# Generate a random hex string of exactly the requested length.
 # Usage: generate_random_string [length]
+# Reads only ceil(length/2) bytes, and no stage closes its pipe early, so this
+# never produces "Broken pipe" errors (even when SIGPIPE is ignored, as under a
+# Node parent such as the GitHub Actions runner). An earlier version filtered
+# urandom through tr -dc, which returned far fewer characters than requested.
 generate_random_string() {
     local length=${1:-8}
-    (dd if=/dev/urandom bs="$length" count=1 2>/dev/null) | LC_CTYPE=C tr -dc '[:alnum:]'
+    od -An -tx1 -N"$(( (length + 1) / 2 ))" /dev/urandom | tr -d ' \n' | head -c "$length"
 }
 
 
